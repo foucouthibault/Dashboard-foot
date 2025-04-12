@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+
+import PlayerList from '@/components/PlayerList.vue'
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <div>
+    <h1>Mon équipe</h1>
+    <PlayerList />
+  </div>
 </template>
+
+<style scoped>
+
+</style>
