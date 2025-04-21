@@ -1,12 +1,12 @@
 <script setup lang="ts">
 
-import PlayerList from '@/components/PlayerList.vue'
+import CompetitionList from '@/components/CompetitionList.vue'
 </script>
 
 <template>
   <div>
-    <h1>Mon équipe</h1>
-    <PlayerList />
+    <h1>Compétition</h1>
+    <CompetitionList />
   </div>
 </template>
 
