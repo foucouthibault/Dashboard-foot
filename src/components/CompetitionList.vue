@@ -14,18 +14,16 @@ onMounted(async () => {
   try {
     competition.value = await getCompetition()
   } catch (err) {
-    console.error('Erreur lors du chargement des joueurs', err)
+    console.error('Erreur lors du chargement de la compétition', err)
   }
 })
 </script>
 
 <template>
   <div>
+    <h1>{{ competition?.name }}</h1>
     <div>
-      <img alt="logo" v-bind:src=competition?.emblem>
-    </div>
-    <div>
-      {{ competition?.name }}
+      <img alt="Logo compétition" v-bind:src=competition?.emblem>
     </div>
   </div>
 </template>

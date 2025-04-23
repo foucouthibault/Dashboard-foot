@@ -10,7 +10,7 @@ const instance = axios.create({
   },
 })
 
-export async function getCompetition() {
-  const response = await instance.get('/competitions/FL1')
+export async function getCompetitionStandings() {
+  const response = await instance.get('/competitions/FL1/standings')
   return response.data
 }

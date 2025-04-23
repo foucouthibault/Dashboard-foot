@@ -1,12 +1,13 @@
 <script setup lang="ts">
 
 import CompetitionList from '@/components/CompetitionList.vue'
+import StandingsComponent from '@/components/StandingsComponent.vue'
 </script>
 
 <template>
   <div>
-    <h1>Compétition</h1>
     <CompetitionList />
+    <StandingsComponent />
   </div>
 </template>
 
