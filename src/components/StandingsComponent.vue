@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getCompetitionStandings } from '@/api/standings.ts'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import LineupComponent from './LineupComponent.vue'
 
 interface Team {
   id: number
@@ -11,6 +12,13 @@ interface Position {
   position: number
   team: Team
   points: number
+  playedGames: number
+  won: number
+  draw: number
+  lost: number
+  goalsFor: number
+  goalsAgainst: number
+  goalDifference: number
 }
 
 interface Standing {
@@ -21,39 +29,192 @@ interface Standings {
   standings: Standing[]
 }
 
-const standings = ref<Standings>()
+interface Props {
+  championshipId: string
+}
 
-onMounted(async () => {
-  try {
-    standings.value = await getCompetitionStandings()
-  } catch (err) {
-    console.error('Erreur lors du chargement des standings', err)
-  }
+const props = withDefaults(defineProps<Props>(), {
+  championshipId: 'FL1'
 })
 
+const standings = ref<Standings>()
+const loading = ref(false)
+const selectedTeamId = ref<number | null>(null)
+const selectedTeamName = ref<string>('')
+
+const loadStandings = async () => {
+  loading.value = true
+  try {
+    standings.value = await getCompetitionStandings(props.championshipId)
+  } catch (err) {
+    console.error('Erreur lors du chargement des standings', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const selectTeam = (teamId: number, teamName: string) => {
+  selectedTeamId.value = teamId
+  selectedTeamName.value = teamName
+}
+
+onMounted(() => {
+  loadStandings()
+})
+
+watch(() => props.championshipId, () => {
+  loadStandings()
+  selectedTeamId.value = null
+})
 </script>
 
 <template>
-  <table>
-    <thead>
-    <tr>
-      <th>Position</th>
-      <th>Équipe</th>
-      <th>Points</th>
-    </tr>
-    </thead>
-    <tbody>
-    <div v-for="(standing, index) in standings?.standings" :key="index">
-      <tr v-for="(position, index) in standing.table" :key="index">
-        <td>{{ position.position }}</td>
-        <td>{{ position.team.name }}</td>
-        <td>{{ position.points }}</td>
-      </tr>
+  <div class="standings-wrapper">
+    <div class="standings-section">
+      <div v-if="loading" class="loading">Chargement...</div>
+      <table v-else class="standings-table">
+        <thead>
+          <tr>
+            <th class="position-col">#</th>
+            <th class="team-col">Équipe</th>
+            <th class="matches-col">J</th>
+            <th class="record-col">V-N-D</th>
+            <th class="goals-col">+/-</th>
+            <th class="points-col">PTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="position in standings?.standings?.[0]?.table"
+            :key="position.team.id"
+            class="team-row"
+            :class="{ active: selectedTeamId === position.team.id }"
+            @click="selectTeam(position.team.id, position.team.name)"
+          >
+            <td class="position-col">{{ position.position }}</td>
+            <td class="team-col">{{ position.team.name }}</td>
+            <td class="matches-col">{{ position.playedGames }}</td>
+            <td class="record-col">{{ position.won }}-{{ position.draw }}-{{ position.lost }}</td>
+            <td class="goals-col">{{ position.goalDifference > 0 ? '+' : '' }}{{ position.goalDifference }}</td>
+            <td class="points-col">{{ position.points }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    </tbody>
-  </table>
+
+    <div class="lineup-section">
+      <LineupComponent :team-id="selectedTeamId" :team-name="selectedTeamName" />
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.standings-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
 
+.standings-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.lineup-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+.standings-table thead {
+  background-color: #2c3e50;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.standings-table th,
+.standings-table td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+  color: #333333;
+}
+
+.standings-table th {
+  background-color: #2c3e50;
+  color: #ffffff;
+  font-size: 0.85rem;
+}
+
+.team-row {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.team-row:hover {
+  background-color: #e8f4f8;
+}
+
+.team-row.active {
+  background-color: #e3f2fd;
+  border-left: 4px solid #0066cc;
+  font-weight: 500;
+}
+
+.position-col {
+  width: 8%;
+  text-align: center;
+  font-weight: 600;
+}
+
+.team-col {
+  width: 45%;
+  text-align: left;
+}
+
+.matches-col {
+  width: 8%;
+  text-align: center;
+}
+
+.record-col {
+  width: 18%;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.goals-col {
+  width: 10%;
+  text-align: center;
+}
+
+.points-col {
+  width: 11%;
+  text-align: right;
+  font-weight: 600;
+}
+
+@media (max-width: 1200px) {
+  .standings-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
