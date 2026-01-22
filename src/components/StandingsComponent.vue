@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getCompetitionStandings } from '@/api/standings.ts'
 import { onMounted, ref, watch } from 'vue'
-import LineupComponent from './LineupComponent.vue'
+import MatchdayComponent from './MatchdayComponent.vue'
 
 interface Team {
   id: number
@@ -39,8 +39,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const standings = ref<Standings>()
 const loading = ref(false)
-const selectedTeamId = ref<number | null>(null)
-const selectedTeamName = ref<string>('')
 
 const loadStandings = async () => {
   loading.value = true
@@ -53,18 +51,12 @@ const loadStandings = async () => {
   }
 }
 
-const selectTeam = (teamId: number, teamName: string) => {
-  selectedTeamId.value = teamId
-  selectedTeamName.value = teamName
-}
-
 onMounted(() => {
   loadStandings()
 })
 
 watch(() => props.championshipId, () => {
   loadStandings()
-  selectedTeamId.value = null
 })
 </script>
 
@@ -84,13 +76,7 @@ watch(() => props.championshipId, () => {
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="position in standings?.standings?.[0]?.table"
-            :key="position.team.id"
-            class="team-row"
-            :class="{ active: selectedTeamId === position.team.id }"
-            @click="selectTeam(position.team.id, position.team.name)"
-          >
+          <tr v-for="position in standings?.standings?.[0]?.table" :key="position.team.id" class="team-row">
             <td class="position-col">{{ position.position }}</td>
             <td class="team-col">{{ position.team.name }}</td>
             <td class="matches-col">{{ position.playedGames }}</td>
@@ -102,8 +88,8 @@ watch(() => props.championshipId, () => {
       </table>
     </div>
 
-    <div class="lineup-section">
-      <LineupComponent :team-id="selectedTeamId" :team-name="selectedTeamName" />
+    <div class="matchday-section">
+      <MatchdayComponent :championship-id="props.championshipId" />
     </div>
   </div>
 </template>
@@ -121,7 +107,7 @@ watch(() => props.championshipId, () => {
   flex-direction: column;
 }
 
-.lineup-section {
+.matchday-section {
   display: flex;
   flex-direction: column;
 }
@@ -166,18 +152,12 @@ watch(() => props.championshipId, () => {
 
 .team-row {
   transition: all 0.2s;
-  cursor: pointer;
 }
 
 .team-row:hover {
   background-color: #e8f4f8;
 }
 
-.team-row.active {
-  background-color: #e3f2fd;
-  border-left: 4px solid #0066cc;
-  font-weight: 500;
-}
 
 .position-col {
   width: 8%;

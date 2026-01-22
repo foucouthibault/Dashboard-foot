@@ -10,3 +10,8 @@ export async function getMatchDetails(matchId: number) {
   return response.data
 }
 
+export async function getCompetitionMatches(competitionId: string) {
+  const response = await apiClient.get(`/competitions/${competitionId}/matches`)
+  return response.data
+}
+
