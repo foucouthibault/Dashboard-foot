@@ -49,14 +49,12 @@ const loadMatchday = async () => {
       allMatches = Array.isArray(matchesData.matches) ? matchesData.matches : [matchesData.matches]
     }
 
-    const finishedMatches = allMatches.filter((m: any) => m.status === 'FINISHED')
+    const finishedMatches = allMatches.filter((m: Match) => m.status === 'FINISHED')
 
     if (finishedMatches.length > 0) {
-      const maxMatchday = Math.max(...finishedMatches.map((m: any) => m.matchday || 0))
+      const maxMatchday = Math.max(...finishedMatches.map((m: Match) => m.matchday || 0))
       currentMatchday.value = maxMatchday
-
-      const matchdayMatches = finishedMatches.filter((m: any) => m.matchday === maxMatchday)
-      matches.value = matchdayMatches
+      matches.value = finishedMatches.filter((m: Match) => m.matchday === maxMatchday)
     } else {
       error.value = 'Aucun match terminé disponible'
     }

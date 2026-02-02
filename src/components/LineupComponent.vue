@@ -19,14 +19,35 @@ interface Player {
   shirtNumber: number
 }
 
+interface Team {
+  id: number
+  name: string
+  shortName: string
+  formation?: string
+  lineup?: ApiPlayer[]
+}
+
+interface ApiPlayer {
+  id: number
+  name: string
+  position?: string
+  shirtNumber: number
+}
+
+interface Score {
+  fullTime: {
+    home: number | null
+    away: number | null
+  }
+}
+
 interface Match {
   id: number
-  dateTime: string
+  utcDate: string
   status: string
-  homeTeam: any
-  awayTeam: any
-  score: any
-  match: any
+  homeTeam: Team
+  awayTeam: Team
+  score: Score
 }
 
 const matches = ref<Match[]>([])
@@ -80,7 +101,11 @@ const loadMatches = async () => {
   }
 }
 
-const extractLineup = (match: any) => {
+/**
+ * Extrait les lineups (compositions) d'un match
+ * @param match - Le match dont on extrait les lineups
+ */
+const extractLineup = (match: Match): void => {
   console.log('Extracting lineup from match:', match)
 
   lineupHome.value = []
@@ -88,20 +113,20 @@ const extractLineup = (match: any) => {
 
   // La structure correcte: match.homeTeam.lineup et match.awayTeam.lineup
   if (match.homeTeam?.lineup && Array.isArray(match.homeTeam.lineup)) {
-    lineupHome.value = match.homeTeam.lineup.map((player: any) => ({
+    lineupHome.value = match.homeTeam.lineup.map((player: ApiPlayer): Player => ({
       id: player.id || Math.random(),
       name: player.name || 'Joueur inconnu',
       position: player.position || 'N/A',
-      shirtNumber: player.shirtNumber || '-'
+      shirtNumber: player.shirtNumber || -1
     }))
   }
 
   if (match.awayTeam?.lineup && Array.isArray(match.awayTeam.lineup)) {
-    lineupAway.value = match.awayTeam.lineup.map((player: any) => ({
+    lineupAway.value = match.awayTeam.lineup.map((player: ApiPlayer): Player => ({
       id: player.id || Math.random(),
       name: player.name || 'Joueur inconnu',
       position: player.position || 'N/A',
-      shirtNumber: player.shirtNumber || '-'
+      shirtNumber: player.shirtNumber || -1
     }))
   }
 

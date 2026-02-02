@@ -2,10 +2,23 @@
 import { ref, onMounted } from 'vue'
 import { getAllChampionships } from '@/api/competitions.ts'
 
+/**
+ * Interface pour un championnat
+ */
 interface Championship {
   id: string
   name: string
   emblem?: string
+}
+
+/**
+ * Interface pour la réponse API des championnats
+ */
+interface ICompetitionResponse {
+  id: string
+  name: string
+  emblem?: string | null
+  [key: string]: unknown
 }
 
 const emit = defineEmits<{
@@ -19,13 +32,16 @@ const selectedChampionship = ref<string>('FL1')
 const placeholder =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><rect width="100%" height="100%" fill="%23eee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="12">No logo</text></svg>'
 
-onMounted(async () => {
+/**
+ * Charge les championnats au montage du composant
+ */
+onMounted(async (): Promise<void> => {
   try {
-    const data = await getAllChampionships()
-    championships.value = data.map((c: any) => ({
+    const data = await getAllChampionships() as ICompetitionResponse[]
+    championships.value = data.map((c: ICompetitionResponse): Championship => ({
       id: c.id,
       name: c.name,
-      emblem: c.emblem
+      emblem: c.emblem ?? undefined
     }))
   } catch (err) {
     console.error('Erreur lors du chargement des championnats', err)
@@ -34,7 +50,11 @@ onMounted(async () => {
   }
 })
 
-const selectChampionship = (id: string) => {
+/**
+ * Sélectionne un championnat et émet l'événement
+ * @param id - L'ID du championnat sélectionné
+ */
+const selectChampionship = (id: string): void => {
   selectedChampionship.value = id
   emit('championshipSelected', id)
 }
