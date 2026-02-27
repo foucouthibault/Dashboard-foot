@@ -1,15 +1,26 @@
 import { apiClient } from './client'
 
-export async function getCompetition() {
-  const response = await apiClient.get('/competitions/FL1')
-  return response.data
+interface Competition {
+  id: string | number
+  name: string
+  emblem?: string | null
+  [key: string]: unknown
 }
 
-export async function getAllChampionships() {
-  const ids = ['FL1', 'PL', 'PD', 'BL1', 'SA']
-  const championships = await Promise.all(
-    ids.map(id => apiClient.get(`/competitions/${id}`).then(res => res.data))
-  )
-  return championships
+const CHAMPIONSHIP_IDS = ['FL1', 'PL', 'PD', 'BL1', 'SA'] as const
+
+export async function getAllChampionships(): Promise<Competition[]> {
+  try {
+
+    return await Promise.all(
+      CHAMPIONSHIP_IDS.map(
+        (id): Promise<Competition> =>
+          apiClient.get<Competition>(`/competitions/${id}`).then((res) => res.data),
+      ),
+    )
+  } catch (error) {
+    console.error('Error fetching championships:', error)
+    throw error
+  }
 }
 

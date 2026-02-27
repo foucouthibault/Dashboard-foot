@@ -1,17 +1,30 @@
 import { apiClient } from './client'
 
-export async function getTeamMatches(teamId: number, limit: number = 5) {
-  const response = await apiClient.get(`/teams/${teamId}/matches?status=FINISHED&limit=${limit}`)
-  return response.data
+interface MatchData {
+  id: number
+  utcDate: string
+  status: string
+  homeTeam: { id: number; name: string }
+  awayTeam: { id: number; name: string }
+  score: { fullTime: { home: number | null; away: number | null } }
+  matchday: number
 }
 
-export async function getMatchDetails(matchId: number) {
-  const response = await apiClient.get(`/matches/${matchId}`)
-  return response.data
+interface MatchesResponse {
+  matches: MatchData[]
 }
 
-export async function getCompetitionMatches(competitionId: string) {
-  const response = await apiClient.get(`/competitions/${competitionId}/matches`)
-  return response.data
+export async function getCompetitionMatches(
+  competitionId: string
+): Promise<MatchesResponse> {
+  try {
+    const response = await apiClient.get<MatchesResponse>(
+      `/competitions/${competitionId}/matches`
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error fetching matches:', error)
+    throw error
+  }
 }
 

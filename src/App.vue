@@ -2,59 +2,35 @@
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <div class="app-container">
+    <RouterView />
+  </div>
 </template>
 
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+</style>
+
 <style scoped>
-header {
-  line-height: 1.5;
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 1rem 0;
-}
-
-.wrapper {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 0 2rem;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-nav {
-  display: flex;
-  gap: 2rem;
-}
-
-nav a {
-  color: #2c3e50;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-nav a:hover {
-  color: #0066cc;
-}
-
-nav a.router-link-active {
-  color: #0066cc;
-  font-weight: 600;
-}
-
-:global(#app > main),
-:global(#app > div[data-v-app]) {
-  padding: 2rem;
-  max-width: 1280px;
-  margin: 0 auto;
+.app-container {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 </style>
