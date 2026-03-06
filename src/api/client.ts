@@ -10,6 +10,6 @@ if (!API_KEY) {
 export const apiClient: AxiosInstance = axios.create({
   baseURL: '/api',
   headers: {
-    'X-Auth-Token': API_KEY
-  }
+    'X-Auth-Token': API_KEY,
+  },
 })

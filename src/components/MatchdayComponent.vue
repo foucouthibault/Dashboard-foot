@@ -1,92 +1,35 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import { getCompetitionMatches } from '@/api/matches'
-
-// Types
-interface Match {
-  id: number
-  utcDate: string
-  status: string
-  homeTeam: {
-    name: string
-    id: number
-  }
-  awayTeam: {
-    name: string
-    id: number
-  }
-  score: {
-    fullTime: {
-      home: number | null
-      away: number | null
-    }
-  }
-  matchday: number
-}
+import { computed, watch, onMounted } from 'vue'
+import { useMatchesStore } from '@/stores/matches'
+import type { Match } from '@/types'
 
 interface Props {
   championshipId: string
 }
 
-// Constants
 const MATCH_STATUS_LABELS: Record<string, string> = {
-  'FINISHED': 'Terminé',
-  'LIVE': 'En direct',
-  'TIMED': 'À venir'
+  FINISHED: 'Terminé',
+  LIVE: 'En direct',
+  TIMED: 'À venir',
 }
 
-// Props
 const props = withDefaults(defineProps<Props>(), {
-  championshipId: 'FL1'
+  championshipId: 'FL1',
 })
 
-// State
-const matches = ref<Match[]>([])
-const currentMatchday = ref<number>(0)
-const loading = ref(false)
-const error = ref<string | null>(null)
+const matchesStore = useMatchesStore()
 
-// Lifecycle
-onMounted((): void => {
-  loadMatchday()
-})
+const matches = computed<Match[]>(() => matchesStore.getMatches(props.championshipId))
+const currentMatchday = computed<number>(() => matchesStore.getMatchday(props.championshipId))
+const loading = computed<boolean>(() => matchesStore.isLoading(props.championshipId))
+const error = computed<string | null>(() => matchesStore.getError(props.championshipId))
+
+onMounted(() => matchesStore.fetchMatches(props.championshipId))
 
 watch(
   () => props.championshipId,
-  (): void => {
-    loadMatchday()
-  }
+  () => matchesStore.fetchMatches(props.championshipId),
 )
-
-// Methods
-const loadMatchday = async (): Promise<void> => {
-  loading.value = true
-  error.value = null
-
-  try {
-    const matchesData = await getCompetitionMatches(props.championshipId)
-    const allMatches = matchesData.matches
-      ? Array.isArray(matchesData.matches)
-        ? matchesData.matches
-        : [matchesData.matches]
-      : []
-
-    const finishedMatches = allMatches.filter((m: Match): boolean => m.status === 'FINISHED')
-
-    if (finishedMatches.length > 0) {
-      const maxMatchday = Math.max(...finishedMatches.map((m: Match): number => m.matchday || 0))
-      currentMatchday.value = maxMatchday
-      matches.value = finishedMatches.filter((m: Match): boolean => m.matchday === maxMatchday)
-    } else {
-      error.value = 'Aucun match terminé disponible'
-    }
-  } catch (err) {
-    console.error('Erreur lors du chargement de la journée:', err)
-    error.value = 'Impossible de charger les matchs de la journée'
-  } finally {
-    loading.value = false
-  }
-}
 
 const formatDate = (dateString: string): string => {
   try {
@@ -96,20 +39,15 @@ const formatDate = (dateString: string): string => {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   } catch {
     return 'Date non disponible'
   }
 }
 
-const getMatchStatus = (match: Match): string => {
-  return MATCH_STATUS_LABELS[match.status] || match.status
-}
-
-const isMatchFinished = (match: Match): boolean => {
-  return match.status === 'FINISHED'
-}
+const getMatchStatus = (match: Match): string => MATCH_STATUS_LABELS[match.status] || match.status
+const isMatchFinished = (match: Match): boolean => match.status === 'FINISHED'
 </script>
 
 <template>

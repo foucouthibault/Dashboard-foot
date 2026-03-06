@@ -1,23 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import StandingsComponent from '@/components/StandingsComponent.vue'
 import ChampionshipsSelector from '@/components/ChampionshipsSelector.vue'
-
-const selectedChampionshipId = ref<string>('FL1')
-
-const onChampionshipSelect = (id: string): void => {
-  selectedChampionshipId.value = id
-}
 </script>
 
 <template>
   <div class="home-view">
-    <div>
+    <div class="hero">
       <h1>⚽ Football Dashboard</h1>
-      <p>Suivez les classements des grands championnats européens</p>
+      <p>Sélectionnez un championnat pour voir le classement et les matchs</p>
     </div>
-    <ChampionshipsSelector @championship-selected="onChampionshipSelect" />
-    <StandingsComponent :championship-id="selectedChampionshipId" />
+    <ChampionshipsSelector />
   </div>
 </template>
 
@@ -25,27 +16,26 @@ const onChampionshipSelect = (id: string): void => {
 .home-view {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
-  padding: 3rem 0;
   width: 100%;
   min-height: 100vh;
 }
 
-.home-view h1 {
+.hero {
   text-align: center;
-  color: #2c3e50;
-  font-size: 2.8rem;
-  margin: 1rem 0 0.5rem 0;
-  font-weight: 700;
-  letter-spacing: -1px;
-  padding: 0 4rem;
+  padding: 3rem 4rem 2rem;
 }
 
-.home-view p {
-  text-align: center;
+.hero h1 {
+  color: #2c3e50;
+  font-size: 2.8rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.hero p {
   color: #666;
   font-size: 1.05rem;
-  margin: 0 0 1rem 0;
-  padding: 0 4rem;
+  margin: 0;
 }
 </style>

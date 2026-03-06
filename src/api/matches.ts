@@ -1,18 +1,5 @@
 import { apiClient } from './client'
-
-interface MatchData {
-  id: number
-  utcDate: string
-  status: string
-  homeTeam: { id: number; name: string }
-  awayTeam: { id: number; name: string }
-  score: { fullTime: { home: number | null; away: number | null } }
-  matchday: number
-}
-
-interface MatchesResponse {
-  matches: MatchData[]
-}
+import type { MatchesResponse } from '@/types'
 
 export async function getCompetitionMatches(
   competitionId: string
@@ -27,4 +14,3 @@ export async function getCompetitionMatches(
     throw error
   }
 }
-

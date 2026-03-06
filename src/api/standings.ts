@@ -1,27 +1,11 @@
 import { apiClient } from './client'
-
-interface Standings {
-  standings: Array<{
-    table: Array<{
-      position: number
-      team: { id: number; name: string }
-      points: number
-      playedGames: number
-      won: number
-      draw: number
-      lost: number
-      goalsFor: number
-      goalsAgainst: number
-      goalDifference: number
-    }>
-  }>
-}
+import type { StandingsResponse } from '@/types'
 
 export async function getCompetitionStandings(
   competitionId: string = 'FL1'
-): Promise<Standings> {
+): Promise<StandingsResponse> {
   try {
-    const response = await apiClient.get<Standings>(
+    const response = await apiClient.get<StandingsResponse>(
       `/competitions/${competitionId}/standings`
     )
     return response.data
