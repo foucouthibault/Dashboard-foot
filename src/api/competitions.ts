@@ -1,7 +1,7 @@
 import { apiClient } from './client'
 import type { Competition } from '@/types'
 
-const CHAMPIONSHIP_IDS = ['FL1', 'PL', 'PD', 'BL1', 'SA'] as const
+const CHAMPIONSHIP_IDS = ['FL1', 'PL', 'PD', 'BL1', 'SA', 'WC'] as const
 
 export async function getAllChampionships(): Promise<Competition[]> {
   try {

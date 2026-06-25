@@ -29,8 +29,10 @@ export const useStandingsStore = defineStore('standings', () => {
 
     try {
       const data = await getCompetitionStandings(competitionId)
+      // Pour les compétitions avec groupes (comme la Coupe du Monde), on aplatit tous les groupes
+      const allRows = data.standings?.flatMap(group => group.table) ?? []
       cache.value[competitionId] = {
-        rows: data.standings?.[0]?.table ?? [],
+        rows: allRows,
         fetchedAt: Date.now(),
       }
     } catch (err) {
