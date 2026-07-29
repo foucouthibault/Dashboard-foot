@@ -18,24 +18,32 @@ import ChampionshipsSelector from '@/components/ChampionshipsSelector.vue'
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
+  align-items: center;
 }
 
 .hero {
   text-align: center;
-  padding: 3rem 4rem 2rem;
+  padding: 4rem 4rem 2rem;
+  width: 100%;
+  max-width: 800px;
 }
 
 .hero h1 {
-  color: #2c3e50;
-  font-size: 2.8rem;
-  margin: 0 0 0.5rem 0;
-  font-weight: 700;
-  letter-spacing: -1px;
+  font-family: 'Bebas Neue', sans-serif;
+  color: #FFD700;
+  font-size: 3.5rem;
+  margin: 0 0 1rem 0;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .hero p {
-  color: #666;
-  font-size: 1.05rem;
+  font-family: 'Inter', sans-serif;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.2rem;
   margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 </style>

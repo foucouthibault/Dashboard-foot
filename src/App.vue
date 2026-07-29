@@ -8,6 +8,8 @@
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -21,6 +23,7 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: 'Inter', sans-serif;
 }
 </style>
 
@@ -28,9 +31,10 @@ body,
 .app-container {
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #121212 0%, #1E5F7A 50%, #121212 100%);
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  color: #FFFFFF;
 }
 </style>

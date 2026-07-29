@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStandingsStore } from '@/stores/standings'
+import { useCompetitionsStore } from '@/stores/competitions'
 import StandingsComponent from '@/components/StandingsComponent.vue'
 import MatchdayComponent from '@/components/MatchdayComponent.vue'
 import ScorersComponent from '@/components/ScorersComponent.vue'
@@ -10,9 +11,16 @@ import { ref } from 'vue'
 const route = useRoute()
 const router = useRouter()
 const standingsStore = useStandingsStore()
+const competitionsStore = useCompetitionsStore()
 
 const championshipId = computed<string>(() => String(route.params.id))
 const activeTab = ref<'standings' | 'scorers'>('standings')
+
+// Récupère le nom de la compétition
+const competitionName = computed<string>(() => {
+  const competition = competitionsStore.competitions.find(c => String(c.id) === championshipId.value)
+  return competition?.name || 'Classement'
+})
 
 const goHome = (): void => {
   router.push({ name: 'home' })
@@ -20,6 +28,7 @@ const goHome = (): void => {
 
 const load = (): void => {
   standingsStore.fetchStandings(championshipId.value)
+  competitionsStore.fetchCompetitions()
 }
 
 onMounted(load)
@@ -66,6 +75,7 @@ watch(championshipId, () => {
           :rows="standingsStore.getRows(championshipId)"
           :loading="standingsStore.isLoading(championshipId)"
           :error="standingsStore.getError(championshipId)"
+          :competition-name="competitionName"
         />
         <ScorersComponent
           v-if="activeTab === 'scorers'"
@@ -91,9 +101,9 @@ watch(championshipId, () => {
 
 .back-bar {
   padding: 1.25rem 4rem;
-  background: #ffffff;
-  border-bottom: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: rgba(20, 30, 40, 0.9);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .back-btn {
@@ -101,10 +111,11 @@ watch(championshipId, () => {
   align-items: center;
   gap: 0.5rem;
   background: none;
-  border: 2px solid #667eea;
-  color: #667eea;
+  border: 2px solid #FFD700;
+  color: #FFD700;
   font-size: 0.95rem;
   font-weight: 600;
+  font-family: 'Inter', sans-serif;
   padding: 0.5rem 1.1rem;
   border-radius: 8px;
   cursor: pointer;
@@ -112,8 +123,8 @@ watch(championshipId, () => {
 }
 
 .back-btn:hover {
-  background: #667eea;
-  color: #ffffff;
+  background: #FFD700;
+  color: #121212;
 }
 
 .back-icon {
@@ -124,8 +135,8 @@ watch(championshipId, () => {
 .content-wrapper {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  padding: 3rem 4rem;
+  gap: 2rem;
+  padding: 2rem 4rem;
   width: 100%;
   box-sizing: border-box;
 }
@@ -144,30 +155,34 @@ watch(championshipId, () => {
   display: flex;
   border-radius: 12px 12px 0 0;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: rgba(46, 125, 90, 0.8);
 }
 
 .tab-btn {
   flex: 1;
   padding: 1rem 1.5rem;
   border: none;
-  background: #f0f0f0;
-  color: #666;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.95rem;
   font-weight: 600;
+  font-family: 'Bebas Neue', sans-serif;
   cursor: pointer;
   transition: all 0.25s ease;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .tab-btn:hover {
-  background: #e0e0e0;
-  color: #2c3e50;
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
+  color: #FFD700;
+  border-bottom: 3px solid #FFD700;
 }
 
 @media (max-width: 1200px) {

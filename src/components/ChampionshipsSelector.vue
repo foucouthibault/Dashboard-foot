@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useCompetitionsStore } from '@/stores/competitions'
 
 const PLACEHOLDER_EMBLEM =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><rect width="100%" height="100%" fill="%23eee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="12">No logo</text></svg>'
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><rect width="100%" height="100%" fill="%232E7D5A"/><circle cx="60" cy="40" r="20" fill="%23FFFFFF"/><circle cx="60" cy="40" r="10" fill="%232E7D5A"/></svg>'
 
 const router = useRouter()
 const competitionsStore = useCompetitionsStore()
@@ -41,20 +41,18 @@ const selectChampionship = (id: string): void => {
 
 <style scoped>
 .championships-container {
-  padding: 4rem 4rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 0;
-  margin: 0;
+  padding: 2rem 4rem;
   width: 100%;
   box-sizing: border-box;
 }
 
 .loading {
   padding: 3rem;
-  color: #ffffff;
+  color: #FFD700;
   text-align: center;
   font-size: 1.1rem;
   font-weight: 500;
+  font-family: 'Inter', sans-serif;
 }
 
 .championships-list {
@@ -71,14 +69,14 @@ const selectChampionship = (id: string): void => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.75rem;
   padding: 1.5rem 1rem;
   border-radius: 12px;
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 3px solid transparent;
+  background: linear-gradient(135deg, rgba(46, 125, 90, 0.8) 0%, rgba(30, 95, 122, 0.8) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -90,44 +88,47 @@ const selectChampionship = (id: string): void => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
 
 .championship-item:hover {
   transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+  border-color: #FFD700;
 }
 
 .championship-item:hover::before {
   left: 100%;
 }
 
-.championship-item {
-  background: #ffffff;
-  border-color: #667eea;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-}
-
-.championship-item.active .championship-name {
-  color: #667eea;
-  font-weight: 700;
-}
-
 .championship-name {
-  font-weight: 600;
-  color: #2c3e50;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  color: #FFFFFF;
   font-size: 1rem;
   text-align: center;
-  transition: color 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s;
+}
+
+.championship-item:hover .championship-name {
+  color: #FFD700;
+  transform: scale(1.05);
 }
 
 img {
-  transition: filter 0.3s;
+  transition: all 0.3s;
   filter: brightness(1);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px;
 }
 
 .championship-item:hover img {
-  filter: brightness(1.05);
+  filter: brightness(1.1);
+  transform: scale(1.05);
 }
 </style>
