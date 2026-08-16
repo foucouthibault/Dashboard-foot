@@ -15,42 +15,55 @@ export const useStandingsStore = defineStore('standings', () => {
   const loading = ref<Record<string, boolean>>({})
   const error = ref<Record<string, string | null>>({})
 
-  const isStale = (competitionId: string): boolean => {
-    const entry = cache.value[competitionId]
+  // Génère une clé de cache unique basée sur competitionId et season
+  const getCacheKey = (competitionId: string, season?: string): string => {
+    return season ? `${competitionId}-${season}` : competitionId
+  }
+
+  const isStale = (competitionId: string, season?: string): boolean => {
+    const key = getCacheKey(competitionId, season)
+    const entry = cache.value[key]
     if (!entry) return true
     return Date.now() - entry.fetchedAt > CACHE_TTL
   }
 
-  const fetchStandings = async (competitionId: string): Promise<void> => {
-    if (!isStale(competitionId)) return
+  const fetchStandings = async (competitionId: string, season?: string): Promise<void> => {
+    const cacheKey = getCacheKey(competitionId, season)
+    if (!isStale(competitionId, season)) return
 
-    loading.value[competitionId] = true
-    error.value[competitionId] = null
+    loading.value[cacheKey] = true
+    error.value[cacheKey] = null
 
     try {
-      const data = await getCompetitionStandings(competitionId)
+      const data = await getCompetitionStandings(competitionId, season)
       // Pour les compétitions avec groupes (comme la Coupe du Monde), on aplatit tous les groupes
       const allRows = data.standings?.flatMap(group => group.table) ?? []
-      cache.value[competitionId] = {
+      cache.value[cacheKey] = {
         rows: allRows,
         fetchedAt: Date.now(),
       }
     } catch (err) {
       console.error('Erreur standings', err)
-      error.value[competitionId] = 'Impossible de charger le classement'
+      error.value[cacheKey] = 'Impossible de charger le classement'
     } finally {
-      loading.value[competitionId] = false
+      loading.value[cacheKey] = false
     }
   }
 
-  const getRows = (competitionId: string): StandingRow[] =>
-    cache.value[competitionId]?.rows ?? []
+  const getRows = (competitionId: string, season?: string): StandingRow[] => {
+    const cacheKey = getCacheKey(competitionId, season)
+    return cache.value[cacheKey]?.rows ?? []
+  }
 
-  const isLoading = (competitionId: string): boolean =>
-    loading.value[competitionId] ?? false
+  const isLoading = (competitionId: string, season?: string): boolean => {
+    const cacheKey = getCacheKey(competitionId, season)
+    return loading.value[cacheKey] ?? false
+  }
 
-  const getError = (competitionId: string): string | null =>
-    error.value[competitionId] ?? null
+  const getError = (competitionId: string, season?: string): string | null => {
+    const cacheKey = getCacheKey(competitionId, season)
+    return error.value[cacheKey] ?? null
+  }
 
   return { fetchStandings, getRows, isLoading, getError }
 })
