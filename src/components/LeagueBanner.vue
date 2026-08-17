@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useLeagueData } from '@/composables/useLeagueData'
 import type { Competition } from '@/types'
 
 interface Props {
@@ -14,85 +14,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-// Mapping des codes/IDs de compétition vers des identifiants de ligue standardisés
-const LEAGUE_MAPPINGS: Record<string, string> = {
-  // Ligue 1
-  '2015': 'Ligue1',
-  'FL1': 'Ligue1',
-  'Ligue 1': 'Ligue1',
-  'Ligue1': 'Ligue1',
-  // Premier League
-  '2021': 'PremierLeague',
-  'PL': 'PremierLeague',
-  'Premier League': 'PremierLeague',
-  'PremierLeague': 'PremierLeague',
-  // Liga
-  '2014': 'Liga',
-  'PD': 'Liga',
-  'La Liga': 'Liga',
-  'Liga': 'Liga',
-  // Bundesliga
-  '2002': 'Bundesliga',
-  'BL1': 'Bundesliga',
-  'Bundesliga': 'Bundesliga',
-  // Serie A
-  '2019': 'SerieA',
-  'SA': 'SerieA',
-  'Serie A': 'SerieA',
-  'SerieA': 'SerieA',
-  // Ligue 2
-  '2016': 'Ligue2',
-  'FL2': 'Ligue2',
-  'Ligue 2': 'Ligue2',
-}
-
-// Noms affichés pour chaque ligue
-const LEAGUE_NAMES: Record<string, string> = {
-  Ligue1: 'Ligue 1 Uber Eats',
-  PremierLeague: 'Premier League',
-  Liga: 'La Liga',
-  Bundesliga: 'Bundesliga',
-  SerieA: 'Serie A',
-  Ligue2: 'Ligue 2 BKT',
-}
-
-// Icônes pour chaque ligue (emojis)
-const LEAGUE_ICONS: Record<string, string> = {
-  Ligue1: '🏆',
-  PremierLeague: '⚽',
-  Liga: '🔥',
-  Bundesliga: '⭐',
-  SerieA: '🛡️',
-  Ligue2: '🥈',
-}
-
-// Couleurs des dégradés pour chaque ligue
-const LEAGUE_GRADIENTS: Record<string, { from: string; to: string }> = {
-  Ligue1: { from: '#1e3a8a', to: '#3b82f6' }, // Bleu marine → Bleu
-  PremierLeague: { from: '#b91c1c', to: '#ef4444' }, // Rouge → Rouge clair
-  Liga: { from: '#ea580c', to: '#f97316' }, // Orange → Orange clair
-  Bundesliga: { from: '#000000', to: '#1f2937' }, // Noir → Gris foncé
-  SerieA: { from: '#166534', to: '#22c55e' }, // Vert foncé → Vert clair
-  Ligue2: { from: '#2563eb', to: '#3b82f6' }, // Bleu → Bleu clair
-}
-
-// Détermine l'ID de la ligue à partir de l'ID ou du nom de la compétition
-const leagueId = computed<string>(() => {
-  const id = String(props.competition.id)
-  return LEAGUE_MAPPINGS[id] || LEAGUE_MAPPINGS[props.competition.name] || 'default'
-})
-
-// Récupère les données de la ligue
-const leagueData = computed(() => {
-  const id = leagueId.value
-  return {
-    id,
-    name: LEAGUE_NAMES[id] || props.competition.name,
-    icon: LEAGUE_ICONS[id] || '⚽',
-    gradient: LEAGUE_GRADIENTS[id] || LEAGUE_GRADIENTS.Ligue1,
-    emblem: props.competition.emblem,
-  }
-})
+const { leagueData } = useLeagueData(props.competition)
 </script>
 
 <template>
@@ -105,7 +27,7 @@ const leagueData = computed(() => {
     :aria-label="`Bannière du championnat: ${leagueData.name}`"
   >
     <!-- Bouton de retour intégré -->
-    <button class="banner-back-btn" @click="emit('back')" aria-label="Retour à tous les championnats">
+    <button type="button" class="banner-back-btn" @click="emit('back')" aria-label="Retour à tous les championnats">
       <span class="banner-back-icon">←</span>
     </button>
 
@@ -125,7 +47,7 @@ const leagueData = computed(() => {
       <!-- Contenu texte -->
       <div class="banner-content">
         <h1 class="banner-title">{{ leagueData.name }}</h1>
-        <p v-if="season" class="banner-season">Saison {{ season }}</p>
+        <p v-if="props.season" class="banner-season">Saison {{ props.season }}</p>
       </div>
     </div>
 
