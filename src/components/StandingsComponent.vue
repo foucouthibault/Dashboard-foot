@@ -5,13 +5,11 @@ interface Props {
   rows: StandingRow[]
   loading?: boolean
   error?: string | null
-  competitionName?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   error: null,
-  competitionName: 'Classement',
 })
 
 // Placeholder pour les logos d'équipes
@@ -21,11 +19,6 @@ const PLACEHOLDER_CREST =
 
 <template>
   <div class="standings-container">
-    <!-- Titre stylisé avec Bebas Neue -->
-    <h2 class="standings-title">
-      {{ competitionName }}
-    </h2>
-
     <div v-if="props.loading" class="loading">
       <div class="spinner"></div>
       <span>Chargement du classement...</span>
@@ -128,16 +121,6 @@ const PLACEHOLDER_CREST =
 }
 
 /* Titre stylisé */
-.standings-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.8rem;
-  color: #FFD700;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  margin-bottom: 1.5rem;
-  text-align: left;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
 
 /* Chargement */
 .loading {
@@ -390,10 +373,6 @@ const PLACEHOLDER_CREST =
 
 /* Responsive */
 @media (max-width: 768px) {
-  .standings-title {
-    font-size: 1.4rem;
-    letter-spacing: 0.1em;
-  }
 
   .standings-table {
     font-size: 0.85rem;

@@ -117,7 +117,7 @@ watch(activeTab, (newTab) => {
               </option>
             </select>
           </div>
-          
+
           <div class="filter-group" v-if="activeTab === 'scorers'">
             <label for="limit-select" class="filter-label">Nombre de buteurs:</label>
             <select
