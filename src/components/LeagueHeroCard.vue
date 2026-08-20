@@ -60,6 +60,7 @@ const { leagueData } = useLeagueData(props.competition)
 
         <!-- Section des informations -->
         <div class="card-info-section">
+          <p class="card-league-label">Championnat</p>
           <h1 class="card-title">{{ leagueData.name }}</h1>
           <p v-if="props.season" class="card-season">Saison {{ props.season }}</p>
           <div class="card-meta">
@@ -101,6 +102,59 @@ const { leagueData } = useLeagueData(props.competition)
     0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
+}
+
+/* Motif de terrain de foot authentique en arrière-plan */
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    /* Texture d'herbe subtile */
+    radial-gradient(ellipse at center, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+    /* Lignes du terrain */
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 25px,
+      rgba(255, 255, 255, 0.03) 25px,
+      rgba(255, 255, 255, 0.03) 26px,
+      transparent 26px,
+      transparent 50px
+    ),
+    /* Cercle central */
+    radial-gradient(circle at 50% 50%,
+      rgba(255, 255, 255, 0.05) 50px,
+      transparent 50px
+    );
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* Effet spotlight au survol */
+.hero-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.hero-card:hover::after {
+  opacity: 1;
+  animation: spotlight 3s ease-out infinite;
 }
 
 .hero-card:hover {
@@ -186,14 +240,25 @@ const { leagueData } = useLeagueData(props.competition)
   min-width: 300px;
 }
 
+.card-league-label {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  opacity: 0.8;
+  font-family: 'Space Mono', monospace;
+  font-weight: 400;
+}
+
 .card-title {
   margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  font-family: 'Inter', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-family: 'Anton', sans-serif;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .card-season {
@@ -257,12 +322,12 @@ const { leagueData } = useLeagueData(props.competition)
 .decoration-icon {
   font-size: 2.5rem;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  animation: float 3s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(2deg); }
 }
 
 /* Responsive */

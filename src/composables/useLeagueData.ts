@@ -101,18 +101,18 @@ const LEAGUE_COLORS: Record<string, { bg: string; text: string; border?: string;
   },
 }
 
-// Couleurs des dégradés pour chaque ligue
+// Couleurs des dégradés pour chaque ligue - couleurs authentiques et plus profondes
 const LEAGUE_GRADIENTS: Record<string, { from: string; to: string }> = {
   default: {
     from: '#6b7280',
     to: '#9ca3af',
   },
-  Ligue1: { from: '#1e3a8a', to: '#3b82f6' },
-  PremierLeague: { from: '#b91c1c', to: '#ef4444' },
-  Liga: { from: '#ea580c', to: '#f97316' },
-  Bundesliga: { from: '#000000', to: '#1f2937' },
-  SerieA: { from: '#166534', to: '#22c55e' },
-  Ligue2: { from: '#2563eb', to: '#3b82f6' },
+  Ligue1: { from: '#002257', to: '#0055a4' },  // Bleu nuit vers bleu royal (Uber Eats)
+  PremierLeague: { from: '#38003c', to: '#e50914' },  // Pourpre vers rouge (Barclays)
+  Liga: { from: '#c60b1e', to: '#ffbf00' },  // Rouge vers or (Santander)
+  Bundesliga: { from: '#000000', to: '#d20515' },  // Noir vers rouge
+  SerieA: { from: '#009246', to: '#006341' },  // Vert italien foncé vers vert moyen
+  Ligue2: { from: '#003087', to: '#2563eb' },  // Bleu marine vers bleu BKT
 }
 
 // Détermine l'ID de la ligue à partir de l'ID ou du nom de la compétition

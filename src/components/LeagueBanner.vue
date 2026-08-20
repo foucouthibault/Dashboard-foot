@@ -46,6 +46,7 @@ const { leagueData } = useLeagueData(props.competition)
 
       <!-- Contenu texte -->
       <div class="banner-content">
+        <p class="banner-league-label">Championnat</p>
         <h1 class="banner-title">{{ leagueData.name }}</h1>
         <p v-if="props.season" class="banner-season">Saison {{ props.season }}</p>
       </div>
@@ -77,7 +78,7 @@ const { leagueData } = useLeagueData(props.competition)
   box-sizing: border-box;
 }
 
-/* Motif de terrain de foot en arrière-plan */
+/* Motif de terrain de foot authentique en arrière-plan */
 .league-banner::before {
   content: '';
   position: absolute;
@@ -86,15 +87,53 @@ const { leagueData } = useLeagueData(props.competition)
   right: 0;
   bottom: 0;
   background-image:
+    /* Texture d'herbe subtile */
+    radial-gradient(ellipse at center, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+    /* Lignes du terrain - plus authentiques */
     repeating-linear-gradient(
-      45deg,
+      0deg,
       transparent,
-      transparent 10px,
-      rgba(255, 255, 255, 0.05) 10px,
-      rgba(255, 255, 255, 0.05) 20px
+      transparent 20px,
+      rgba(255, 255, 255, 0.03) 20px,
+      rgba(255, 255, 255, 0.03) 21px,
+      transparent 21px,
+      transparent 40px
+    ),
+    /* Cercle central */
+    radial-gradient(circle at 50% 50%,
+      rgba(255, 255, 255, 0.05) 45px,
+      transparent 45px
     );
   opacity: 0.3;
   pointer-events: none;
+}
+
+/* Effet spotlight au survol */
+.league-banner::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.league-banner:hover::after {
+  opacity: 1;
+  animation: spotlight 3s ease-out infinite;
+}
+
+@keyframes spotlight {
+  0% { transform: translate(-50%, -50%) scale(0.8); }
+  100% { transform: translate(-50%, -50%) scale(1.2); }
 }
 
 .banner-back-btn {
@@ -157,12 +196,23 @@ const { leagueData } = useLeagueData(props.competition)
   text-align: left;
 }
 
+.banner-league-label {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  opacity: 0.8;
+  font-family: 'Space Mono', monospace;
+  font-weight: 400;
+}
+
 .banner-title {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  font-family: 'Inter', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
 }
 
 .banner-season {
@@ -179,12 +229,12 @@ const { leagueData } = useLeagueData(props.competition)
 
 .decoration-icon {
   font-size: 2rem;
-  animation: pulse 2s infinite;
+  animation: float 6s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(2deg); }
 }
 
 /* Responsive */
