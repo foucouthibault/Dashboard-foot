@@ -6,6 +6,7 @@ import { useCompetitionsStore } from '@/stores/competitions'
 import StandingsComponent from '@/components/StandingsComponent.vue'
 import MatchdayComponent from '@/components/MatchdayComponent.vue'
 import ScorersComponent from '@/components/ScorersComponent.vue'
+import LeagueBanner from '@/components/LeagueBanner.vue'
 import { ref } from 'vue'
 
 const route = useRoute()
@@ -16,10 +17,9 @@ const competitionsStore = useCompetitionsStore()
 const championshipId = computed<string>(() => String(route.params.id))
 const activeTab = ref<'standings' | 'scorers'>('standings')
 
-// Récupère le nom de la compétition
-const competitionName = computed<string>(() => {
-  const competition = competitionsStore.competitions.find(c => String(c.id) === championshipId.value)
-  return competition?.name || 'Classement'
+// Récupère la compétition complète
+const competition = computed(() => {
+  return competitionsStore.competitions.find(c => String(c.id) === championshipId.value)
 })
 
 const goHome = (): void => {
@@ -41,13 +41,12 @@ watch(championshipId, () => {
 
 <template>
   <div class="championship-view">
-    <!-- Barre de retour -->
-    <div class="back-bar">
-      <button class="back-btn" @click="goHome">
-        <span class="back-icon">←</span>
-        Tous les championnats
-      </button>
-    </div>
+    <!-- Bannière du championnat -->
+    <LeagueBanner
+      v-if="competition"
+      :competition="competition"
+      @back="goHome"
+    />
 
     <!-- Contenu principal -->
     <div class="content-wrapper">
@@ -75,7 +74,6 @@ watch(championshipId, () => {
           :rows="standingsStore.getRows(championshipId)"
           :loading="standingsStore.isLoading(championshipId)"
           :error="standingsStore.getError(championshipId)"
-          :competition-name="competitionName"
         />
         <ScorersComponent
           v-if="activeTab === 'scorers'"
@@ -97,39 +95,6 @@ watch(championshipId, () => {
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
-}
-
-.back-bar {
-  padding: 1.25rem 4rem;
-  background: rgba(20, 30, 40, 0.9);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: 2px solid #FFD700;
-  color: #FFD700;
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  padding: 0.5rem 1.1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  background: #FFD700;
-  color: #121212;
-}
-
-.back-icon {
-  font-size: 1.1rem;
-  line-height: 1;
 }
 
 .content-wrapper {
