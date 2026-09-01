@@ -24,19 +24,26 @@ const competition = computed(() => {
 })
 
 // Paramètres pour les requêtes
-const selectedSeason = ref<string>('')
 const scorersLimit = ref<number>(10)
 
 // Année actuelle pour la saison par défaut
 const currentYear = new Date().getFullYear()
-const defaultSeason = `${currentYear}/${currentYear + 1}`
 
 // Saisons disponibles (à adapter selon les données réelles)
-const availableSeasons = ref<string[]>([
-  `${currentYear}/${currentYear + 1}`,
-  `${currentYear - 1}/${currentYear}`,
-  `${currentYear - 2}/${currentYear - 1}`,
+// L'API football-data.org attend l'année de début de saison (ex: "2025"),
+// on affiche en revanche le libellé complet (ex: "2025/2026")
+interface SeasonOption {
+  label: string
+  value: string
+}
+
+const availableSeasons = ref<SeasonOption[]>([
+  { label: `${currentYear}/${currentYear + 1}`, value: String(currentYear) },
+  { label: `${currentYear - 1}/${currentYear}`, value: String(currentYear - 1) },
+  { label: `${currentYear - 2}/${currentYear - 1}`, value: String(currentYear - 2) },
 ])
+
+const selectedSeason = ref<string>(availableSeasons.value[0].value)
 
 const goHome = (): void => {
   router.push({ name: 'home' })
@@ -67,18 +74,18 @@ watch(scorersLimit, () => {
 
 onMounted(() => {
   load()
-  // Initialiser la saison par défaut
-  if (availableSeasons.value.length > 0) {
-    selectedSeason.value = availableSeasons.value[0]
-  }
 })
 
 watch(championshipId, () => {
   activeTab.value = 'standings'
-  load()
-  // Réinitialiser la saison
-  if (availableSeasons.value.length > 0) {
-    selectedSeason.value = availableSeasons.value[0]
+  // Réinitialiser la saison sur le championnat suivant
+  const defaultSeason = availableSeasons.value[0].value
+  if (selectedSeason.value === defaultSeason) {
+    // La saison ne change pas, il faut déclencher le chargement manuellement
+    load()
+  } else {
+    // Le watcher sur selectedSeason se charge de recharger les données
+    selectedSeason.value = defaultSeason
   }
 })
 
@@ -112,8 +119,8 @@ watch(activeTab, (newTab) => {
               v-model="selectedSeason"
               class="filter-select"
             >
-              <option v-for="season in availableSeasons" :key="season" :value="season">
-                {{ season }}
+              <option v-for="season in availableSeasons" :key="season.value" :value="season.value">
+                {{ season.label }}
               </option>
             </select>
           </div>
