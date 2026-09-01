@@ -1,4 +1,5 @@
-import { computed } from 'vue'
+import { computed, toValue } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
 import type { Competition } from '@/types'
 
 // Mapping des codes/IDs de compétition vers des identifiants de ligue standardisés
@@ -135,9 +136,11 @@ const getLeagueData = (competition: Competition) => {
   }
 }
 
-export const useLeagueData = (competition: Competition) => {
-  const leagueId = computed(() => getLeagueId(competition))
-  const leagueData = computed(() => getLeagueData(competition))
+// Accepte une valeur, une ref ou un getter : passer un getter (`() => props.competition`)
+// garde les données à jour quand on navigue d'un championnat à l'autre sans remontage.
+export const useLeagueData = (source: MaybeRefOrGetter<Competition>) => {
+  const leagueId = computed(() => getLeagueId(toValue(source)))
+  const leagueData = computed(() => getLeagueData(toValue(source)))
 
   return { leagueId, leagueData }
 }

@@ -12,402 +12,298 @@ const props = withDefaults(defineProps<Props>(), {
   error: null,
 })
 
-// Placeholder pour les logos d'équipes
+// Vignette manquante : la silhouette imprimée dans la case vide
 const PLACEHOLDER_CREST =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="%231A5F3F" rx="4"/><circle cx="12" cy="12" r="6" fill="%23FFFFFF"/><circle cx="12" cy="12" r="3" fill="%231A5F3F"/></svg>'
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="%23dfcea8" rx="4"/><circle cx="12" cy="12" r="6" fill="%23151c3b"/><circle cx="12" cy="12" r="3" fill="%23efe3c8"/></svg>'
 </script>
 
 <template>
   <div class="standings-container">
-    <div v-if="props.loading" class="loading">
-      <div class="spinner"></div>
-      <span>Chargement du classement...</span>
-    </div>
+    <p v-if="props.loading" class="etat">Chargement du classement…</p>
 
-    <div v-else-if="props.error" class="error">
-      <span class="error-icon">⚠️</span>
+    <p v-else-if="props.error" class="etat etat-erreur">
       {{ props.error }}
-    </div>
+    </p>
 
-    <div v-else class="standings-wrapper">
-      <table class="standings-table">
-        <!-- En-tête -->
-        <thead>
-          <tr>
-            <th class="header-col position-col">#</th>
-            <th class="header-col team-col">Équipe</th>
-            <th class="header-col matches-col">Joués</th>
-            <th class="header-col record-col">V-N-D</th>
-            <th class="header-col goals-col">+/-</th>
-            <th class="header-col points-col">PTS</th>
-          </tr>
-        </thead>
+    <p v-else-if="props.rows.length === 0" class="etat">
+      Aucun classement publié pour cette saison. Choisissez une autre tranche sur l'étagère.
+    </p>
 
-        <!-- Corps du tableau -->
-        <tbody>
-          <tr
-            v-for="(row, index) in props.rows"
-            :key="row.team.id"
-            class="team-row"
-            :class="{
-              'top-3': index < 3,
-              even: index % 2 === 0,
-            }"
-          >
-            <!-- Position -->
-            <td class="position-col">
-              <span class="position-badge" :class="{ 'top-3': index < 3 }">
-                {{ row.position }}
-              </span>
-            </td>
+    <table v-else class="tableau">
+      <thead>
+        <tr>
+          <th scope="col" class="col-rang">N°</th>
+          <th scope="col" class="col-equipe">Équipe</th>
+          <th scope="col" class="col-joues">J</th>
+          <th scope="col" class="col-bilan">V-N-D</th>
+          <th scope="col" class="col-diff">Diff.</th>
+          <th scope="col" class="col-points">Pts</th>
+        </tr>
+      </thead>
 
-            <!-- Équipe avec logo -->
-            <td class="team-col">
-              <div class="team-info">
+      <tbody>
+        <tr
+          v-for="(row, index) in props.rows"
+          :key="row.team.id"
+          class="ligne"
+          :class="{ 'ligne-leader': row.position === 1 }"
+          :style="{ '--i': index }"
+        >
+          <td class="col-rang">
+            <span class="rang numero-vignette" :class="{ foil: row.position === 1 }">
+              {{ row.position }}
+            </span>
+          </td>
+
+          <td class="col-equipe">
+            <div class="equipe">
+              <span class="ecusson">
                 <img
                   :src="row.team.crest || PLACEHOLDER_CREST"
-                  :alt="row.team.name"
-                  class="team-crest"
+                  alt=""
                   width="24"
                   height="24"
                 />
-                <span class="team-name">{{ row.team.name }}</span>
-              </div>
-            </td>
+              </span>
+              <span class="equipe-nom">{{ row.team.name }}</span>
+            </div>
+          </td>
 
-            <!-- Matchs joués -->
-            <td class="matches-col data-cell">
-              {{ row.playedGames }}
-            </td>
+          <td class="col-joues chiffre">{{ row.playedGames }}</td>
 
-            <!-- Victoires-Nuls-Défaites -->
-            <td class="record-col">
-              <span class="record-item won">{{ row.won }}</span>
-              <span class="record-separator">-</span>
-              <span class="record-item draw">{{ row.draw }}</span>
-              <span class="record-separator">-</span>
-              <span class="record-item lost">{{ row.lost }}</span>
-            </td>
+          <td class="col-bilan chiffre">
+            <span class="bilan-v">{{ row.won }}</span
+            ><span class="bilan-sep">·</span
+            ><span class="bilan-n">{{ row.draw }}</span
+            ><span class="bilan-sep">·</span
+            ><span class="bilan-d">{{ row.lost }}</span>
+          </td>
 
-            <!-- Différence de buts -->
-            <td
-              class="goals-col data-cell"
-              :class="{ positive: row.goalDifference > 0, negative: row.goalDifference < 0 }"
-            >
-              {{ row.goalDifference > 0 ? '+' : '' }}{{ row.goalDifference }}
-            </td>
+          <td
+            class="col-diff chiffre"
+            :class="{ positif: row.goalDifference > 0, negatif: row.goalDifference < 0 }"
+          >
+            {{ row.goalDifference > 0 ? '+' : '' }}{{ row.goalDifference }}
+          </td>
 
-            <!-- Points -->
-            <td class="points-col data-cell">
-              {{ row.points }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+          <td class="col-points chiffre points">{{ row.points }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <style scoped>
-/* Import des polices Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap');
-
-
-
-/* Conteneur principal */
 .standings-container {
   width: 100%;
-  font-family: 'Inter', sans-serif;
 }
 
-/* Titre stylisé */
-
-/* Chargement */
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 3rem;
-  color: #E0E0E0;
+.etat {
+  padding: 2.5rem 0;
+  max-width: 44ch;
+  color: var(--encre-pale);
   font-size: 1rem;
+  line-height: 1.5;
 }
 
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(255, 215, 0, 0.3);
-  border-top-color: #FFD700;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.etat-erreur {
+  color: var(--rouge);
+  font-weight: 500;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Erreur */
-.error {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 2rem;
-  color: #D32F2F;
-  font-size: 0.95rem;
-  text-align: center;
-  background: rgba(211, 47, 47, 0.1);
-  border-radius: 8px;
-}
-
-.error-icon {
-  font-size: 1.2rem;
-}
-
-/* Wrapper du tableau */
-.standings-wrapper {
-  position: relative;
-}
-
-/* Tableau */
-.standings-table {
+/* ── La planche de vignettes ─────────────────────────────────────────── */
+.tableau {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  font-size: 0.95rem;
-  background: linear-gradient(180deg, #2E7D5A 0%, #1E5F7A 100%);
 }
 
-/* En-tête */
-.standings-table thead {
-  position: relative;
-}
-
-.standings-table thead tr {
-  background: linear-gradient(135deg, rgba(46, 125, 90, 0.95) 0%, rgba(30, 95, 122, 0.95) 100%);
-}
-
-.standings-table th {
-  color: #FFD700 !important;
-  font-family: 'Bebas Neue', sans-serif;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  padding: 1rem 0.5rem;
-  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.header-col {
-  padding: 1rem 0.5rem;
-  text-align: center;
-  font-size: 0.75rem;
+.tableau th {
+  padding: 0 0.5rem 0.6rem;
+  border-bottom: 2px solid var(--encre);
+  font-family: var(--condense);
   font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  white-space: nowrap;
+  text-align: center;
+  color: var(--encre-pale);
 }
 
-/* Lignes du tableau */
-.team-row {
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.tableau th.col-equipe {
+  text-align: left;
 }
 
-.team-row:hover {
-  background: rgba(255, 255, 255, 0.12);
-  transform: translateX(4px);
-  box-shadow: inset 4px 0 0 #FFD700;
+/* Chaque ligne se pose comme une vignette qu'on colle */
+.ligne {
+  animation: poser-vignette 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+  animation-delay: calc(var(--i) * 22ms);
 }
 
-.team-row.even {
-  background: rgba(255, 255, 255, 0.08);
+@keyframes poser-vignette {
+  from {
+    opacity: 0;
+    transform: translateY(-7px) rotate(-1.2deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.team-row.top-3 {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%);
+.ligne td {
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid rgba(21, 28, 59, 0.16);
+  vertical-align: middle;
 }
 
-/* Colonnes */
-.position-col,
-.team-col,
-.matches-col,
-.record-col,
-.goals-col,
-.points-col {
-  padding: 1rem 0.5rem;
+.ligne:nth-child(even) td {
+  background: rgba(21, 28, 59, 0.045);
 }
 
-.position-col {
-  width: 8%;
+.ligne:hover td {
+  background: var(--papier-creux);
+}
+
+/* Le leader : la vignette brillante de la page */
+.ligne-leader td:first-child {
+  box-shadow: inset 4px 0 0 var(--rouge);
+}
+
+/* ── Colonnes ────────────────────────────────────────────────────────── */
+.col-rang {
+  width: 3.25rem;
   text-align: center;
 }
 
-.team-col {
-  width: 46%;
+.col-equipe {
+  width: auto;
 }
 
-.matches-col {
-  width: 8%;
-  text-align: center;
+.col-joues {
+  width: 2.75rem;
 }
 
-
-
-.goals-col {
-  width: 10%;
-  text-align: center;
+.col-bilan {
+  width: 5.5rem;
 }
 
-.points-col {
-  width: 10%;
-  text-align: center;
-  padding: 1rem 0.5rem;
+.col-diff {
+  width: 3.75rem;
 }
 
-/* Badge de position */
-.position-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 700;
-  font-size: 0.9rem;
+.col-points {
+  width: 3.5rem;
 }
 
-.position-badge.top-3 {
-  background: #FFD700;
-  color: #121212;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+/* ── Contenu ─────────────────────────────────────────────────────────── */
+.rang {
+  display: inline-grid;
+  place-items: center;
+  min-width: 27px;
+  height: 27px;
+  padding: 0 0.3rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
 }
 
-/* Infos de l'équipe */
-.team-info {
+.equipe {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.7rem;
+  min-width: 0;
 }
 
-.team-crest {
-  border-radius: 50%;
+/* L'écusson serti dans sa case */
+.ecusson {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: var(--ombre-vignette);
+}
+
+.ecusson img {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
-  background: #FFFFFF;
-  padding: 2px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-.team-name {
+.equipe-nom {
+  font-family: var(--condense);
   font-weight: 600;
-  color: #FFFFFF;
-  font-size: 0.95rem;
-  flex: 1;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  line-height: 1;
-}
-
-/* Cellules de données (utilisant Roboto Mono) */
-.data-cell {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 700;
-  color: #FFFFFF;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-/* Victoires-Nuls-Défaites */
-.record-col {
-  width: 18%;
-  text-align: center;
+  font-size: 1.02rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--encre);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.record-item {
-  font-family: 'Roboto Mono', monospace;
+.ligne-leader .equipe-nom {
   font-weight: 700;
-  color: #FFFFFF;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.record-item.won {
-  color: #4caf50;
+.chiffre {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+  text-align: center;
+  color: var(--encre);
 }
 
-.record-item.draw {
-  color: #ffc107;
+.bilan-v {
+  color: var(--vert);
 }
 
-.record-item.lost {
-  color: #D32F2F;
+.bilan-d {
+  color: var(--rouge);
 }
 
-.record-separator {
-  color: rgba(255, 255, 255, 0.5);
+.bilan-sep {
+  padding: 0 0.18rem;
+  color: var(--encre-pale);
 }
 
-/* Différence de buts */
-.goals-col.positive {
-  color: #4CAF50;
+.positif {
+  color: var(--vert);
 }
 
-.goals-col.negative {
-  color: #D32F2F;
+.negatif {
+  color: var(--rouge);
 }
 
-/* Points (en or pour les 3 premiers) */
-.points-col {
-  font-size: 1.1rem;
-  color: #FFD700;
+.points {
+  font-weight: 500;
+  font-size: 1.05rem;
 }
 
-.team-row:not(.top-3) .points-col {
-  color: #FFFFFF;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-
-  .standings-table {
-    font-size: 0.85rem;
+@media (max-width: 640px) {
+  .tableau th {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
   }
 
-  .position-col {
-    width: 8%;
+  .col-bilan {
+    display: none;
   }
 
-  .team-col {
-    width: 46%;
+  .equipe-nom {
+    font-size: 0.9rem;
   }
 
-  .matches-col {
-    width: 8%;
+  .ecusson {
+    width: 28px;
+    height: 28px;
   }
 
-  .record-col {
-    width: 18%;
-  }
-
-  .goals-col {
-    width: 10%;
-  }
-
-  .points-col {
-    width: 10%;
-  }
-
-  .record-item {
-    font-size: 0.8rem;
-  }
-
-  .team-name {
-    font-size: 0.85rem;
+  .ecusson img {
+    width: 20px;
+    height: 20px;
   }
 }
 </style>

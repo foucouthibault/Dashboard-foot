@@ -11,6 +11,7 @@ export interface Team {
 export interface Competition {
   id: string | number
   name: string
+  code?: string
   emblem?: string | null
 }
 

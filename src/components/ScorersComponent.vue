@@ -20,7 +20,7 @@ const loading = computed<boolean>(() => scorersStore.isLoading(props.championshi
 const error = computed<string | null>(() => scorersStore.getError(props.championshipId, props.limit))
 
 const PLACEHOLDER_CREST =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="%232E7D5A" rx="12"/><circle cx="12" cy="12" r="8" fill="%23FFFFFF"/><circle cx="12" cy="12" r="4" fill="%232E7D5A"/></svg>'
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="%23dfcea8" rx="12"/><circle cx="12" cy="12" r="8" fill="%23151c3b"/><circle cx="12" cy="12" r="4" fill="%23efe3c8"/></svg>'
 
 onMounted(() => scorersStore.fetchScorers(props.championshipId, props.limit))
 
@@ -32,57 +32,61 @@ watch(
 
 <template>
   <div class="scorers-container">
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      Chargement des buteurs...
-    </div>
-    <div v-else-if="error" class="error">
-      <span class="error-icon">⚠️</span>
-      {{ error }}
-    </div>
-    <div v-else>
-      <h2 class="scorers-title">Meilleurs Buteurs</h2>
-      <table class="scorers-table">
-        <thead>
-          <tr>
-            <th class="rank-col">#</th>
-            <th class="player-col">Joueur</th>
-            <th class="team-col">Équipe</th>
-            <th class="goals-col">⚽ Buts</th>
-            <th class="assists-col">🎯 Passes D.</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(scorer, index) in scorers" :key="scorer.player.id" class="scorer-row" :class="{ even: index % 2 === 0 }">
-            <td class="rank-col">
-              <span class="rank-badge" :class="{ top3: index < 3 }">{{ index + 1 }}</span>
-            </td>
-            <td class="player-col">
-              <div class="player-info">
-                <span class="player-name">{{ scorer.player.name }}</span>
-                <span class="player-nationality">{{ scorer.player.nationality }}</span>
-              </div>
-            </td>
-            <td class="team-col">
-              <div class="team-info">
+    <p v-if="loading" class="etat">Chargement des buteurs…</p>
+
+    <p v-else-if="error" class="etat etat-erreur">{{ error }}</p>
+
+    <p v-else-if="scorers.length === 0" class="etat">
+      Aucun buteur enregistré pour cette compétition.
+    </p>
+
+    <table v-else class="tableau">
+      <thead>
+        <tr>
+          <th scope="col" class="col-rang">N°</th>
+          <th scope="col" class="col-joueur">Joueur</th>
+          <th scope="col" class="col-equipe">Équipe</th>
+          <th scope="col" class="col-buts">Buts</th>
+          <th scope="col" class="col-passes">Passes</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          v-for="(scorer, index) in scorers"
+          :key="scorer.player.id"
+          class="ligne"
+          :style="{ '--i': index }"
+        >
+          <td class="col-rang">
+            <span class="rang numero-vignette" :class="{ foil: index === 0 }">{{ index + 1 }}</span>
+          </td>
+
+          <td class="col-joueur">
+            <span class="joueur-nom">{{ scorer.player.name }}</span>
+            <span class="joueur-pays">{{ scorer.player.nationality }}</span>
+          </td>
+
+          <td class="col-equipe">
+            <div class="equipe">
+              <span class="ecusson">
                 <img
                   :src="scorer.team.crest || PLACEHOLDER_CREST"
-                  :alt="scorer.team.name"
-                  class="team-crest"
+                  alt=""
                   width="22"
                   height="22"
                 />
-                <span class="team-name">{{ scorer.team.name }}</span>
-              </div>
-            </td>
-            <td class="goals-col">
-              <span class="goals-value">{{ scorer.goals }}</span>
-            </td>
-            <td class="assists-col">{{ scorer.assists ?? '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+              </span>
+              <span class="equipe-nom">{{ scorer.team.name }}</span>
+            </div>
+          </td>
+
+          <td class="col-buts chiffre buts">{{ scorer.goals }}</td>
+
+          <td class="col-passes chiffre passes">{{ scorer.assists ?? '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -91,195 +95,180 @@ watch(
   width: 100%;
 }
 
-.scorers-title {
-  font-family: 'Bebas Neue', sans-serif;
-  color: #FFD700;
-  font-size: 1.5rem;
-  margin: 0 0 1.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.loading {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: center;
-  padding: 2rem;
-  color: rgba(255, 255, 255, 0.8);
+.etat {
+  padding: 2.5rem 0;
+  max-width: 44ch;
+  color: var(--encre-pale);
   font-size: 1rem;
-  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
 }
 
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 215, 0, 0.3);
-  border-top-color: #FFD700;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.etat-erreur {
+  color: var(--rouge);
+  font-weight: 500;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: center;
-  padding: 1.5rem;
-  color: #D32F2F;
-  font-size: 0.95rem;
-  font-family: 'Inter', sans-serif;
-  background: rgba(211, 47, 47, 0.1);
-  border-radius: 8px;
-}
-
-.error-icon {
-  font-size: 1.2rem;
-}
-
-.scorers-table {
+.tableau {
   width: 100%;
   border-collapse: collapse;
-  background: linear-gradient(180deg, rgba(46, 125, 90, 0.6) 0%, rgba(30, 95, 122, 0.6) 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  font-size: 0.95rem;
-  border: 1px solid rgba(255, 215, 0, 0.2);
+  table-layout: fixed;
 }
 
-.scorers-table th {
-  color: #FFD700 !important;
-  font-family: 'Bebas Neue', sans-serif;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  padding: 1rem 0.5rem;
-  text-align: left;
-  font-size: 0.75rem;
+.tableau th {
+  padding: 0 0.5rem 0.6rem;
+  border-bottom: 2px solid var(--encre);
+  font-family: var(--condense);
   font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  text-align: center;
+  color: var(--encre-pale);
 }
 
-.scorers-table td {
-  padding: 1rem 0.5rem;
+.tableau th.col-joueur,
+.tableau th.col-equipe {
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
 }
 
-.scorer-row {
-  transition: all 0.2s;
+.ligne {
+  animation: poser-vignette 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+  animation-delay: calc(var(--i) * 22ms);
 }
 
-.scorer-row:hover {
-  background: rgba(255, 255, 255, 0.08);
+@keyframes poser-vignette {
+  from {
+    opacity: 0;
+    transform: translateY(-7px) rotate(-1.2deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.scorer-row.even {
-  background: rgba(255, 255, 255, 0.05);
+.ligne td {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid rgba(21, 28, 59, 0.16);
+  vertical-align: middle;
 }
 
-.rank-col {
-  width: 6%;
+.ligne:nth-child(even) td {
+  background: rgba(21, 28, 59, 0.045);
+}
+
+.ligne:hover td {
+  background: var(--papier-creux);
+}
+
+/* ── Colonnes ────────────────────────────────────────────────────────── */
+.col-rang {
+  width: 3.25rem;
   text-align: center;
 }
 
-.rank-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 700;
+.col-buts,
+.col-passes {
+  width: 4.25rem;
+}
+
+/* ── Contenu ─────────────────────────────────────────────────────────── */
+.rang {
+  display: inline-grid;
+  place-items: center;
+  min-width: 27px;
+  height: 27px;
+  padding: 0 0.3rem;
+  border-radius: 4px;
   font-size: 0.85rem;
-  color: #FFFFFF;
-  background: rgba(255, 255, 255, 0.2);
 }
 
-.rank-badge.top3 {
-  background: #FFD700;
-  color: #121212;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.player-col {
-  width: 30%;
-}
-
-.player-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.player-name {
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  color: #FFFFFF;
+.joueur-nom {
   display: block;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.player-nationality {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.7);
-  display: block;
-}
-
-.team-col {
-  width: 34%;
-}
-
-.team-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.team-crest {
-  object-fit: contain;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: #FFFFFF;
-  padding: 2px;
-}
-
-.team-name {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  color: #FFFFFF;
-  white-space: nowrap;
+  font-family: var(--condense);
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--encre);
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
 }
 
-.goals-col {
-  width: 15%;
-  text-align: center;
+.joueur-pays {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.76rem;
+  color: var(--encre-pale);
 }
 
-.goals-value {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 700;
-  color: #FFD700;
-  font-size: 1.1rem;
+.equipe {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
-.assists-col {
-  width: 15%;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.8);
+.ecusson {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: var(--ombre-vignette);
+}
+
+.ecusson img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.equipe-nom {
+  font-family: var(--condense);
   font-weight: 600;
-  font-family: 'Roboto Mono', monospace;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--encre);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chiffre {
+  font-family: var(--chiffres);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--encre);
+}
+
+.buts {
+  font-weight: 500;
+  font-size: 1.15rem;
+  color: var(--rouge);
+}
+
+.passes {
+  font-size: 0.92rem;
+  color: var(--encre-pale);
+}
+
+@media (max-width: 640px) {
+  .tableau th {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+
+  .col-equipe {
+    display: none;
+  }
+
+  .joueur-nom {
+    font-size: 0.9rem;
+  }
 }
 </style>
