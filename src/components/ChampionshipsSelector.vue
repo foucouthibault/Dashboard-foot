@@ -2,9 +2,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompetitionsStore } from '@/stores/competitions'
-
-const PLACEHOLDER_EMBLEM =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><rect width="100%" height="100%" fill="%232E7D5A"/><circle cx="60" cy="40" r="20" fill="%23FFFFFF"/><circle cx="60" cy="40" r="10" fill="%232E7D5A"/></svg>'
+import { PLACEHOLDER_EMBLEM } from '@/constants/placeholders'
 
 const router = useRouter()
 const competitionsStore = useCompetitionsStore()
@@ -18,22 +16,23 @@ const selectChampionship = (id: string): void => {
 
 <template>
   <div class="championships-container">
-    <div v-if="competitionsStore.loading" class="loading">Chargement des championnats...</div>
-    <div v-else-if="competitionsStore.error" class="error">{{ competitionsStore.error }}</div>
-    <ul v-else class="championships-list">
-      <li
-        v-for="c in competitionsStore.competitions"
-        :key="c.id"
-        class="championship-item"
-        @click="selectChampionship(String(c.id))"
-      >
-        <img
-          :src="c.emblem || PLACEHOLDER_EMBLEM"
-          :alt="c.name"
-          width="70"
-          height="70"
-        />
-        <div class="championship-name">{{ c.name }}</div>
+    <p v-if="competitionsStore.loading" class="etat">Chargement des championnats…</p>
+
+    <p v-else-if="competitionsStore.error" class="etat etat-erreur">
+      {{ competitionsStore.error }}
+    </p>
+
+    <ul v-else class="planche">
+      <li v-for="c in competitionsStore.competitions" :key="c.id">
+        <button type="button" class="case vignette" @click="selectChampionship(String(c.id))">
+          <span v-if="c.code" class="vignette-ref numero-vignette">{{ c.code }}</span>
+
+          <span class="vignette-image">
+            <img :src="c.emblem || PLACEHOLDER_EMBLEM" :alt="''" width="70" height="70" />
+          </span>
+
+          <span class="vignette-nom">{{ c.name }}</span>
+        </button>
       </li>
     </ul>
   </div>
@@ -41,94 +40,111 @@ const selectChampionship = (id: string): void => {
 
 <style scoped>
 .championships-container {
-  padding: 2rem 4rem;
   width: 100%;
-  box-sizing: border-box;
 }
 
-.loading {
-  padding: 3rem;
-  color: #FFD700;
-  text-align: center;
-  font-size: 1.1rem;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
+.etat {
+  padding: 2.5rem 0;
+  color: var(--encre-pale);
+  font-size: 1rem;
 }
 
-.championships-list {
+/* La planche de l'album : une grille régulière, comme une page de cases */
+.planche {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
   list-style: none;
-  padding: 0;
-  margin: 0;
 }
 
-.championship-item {
+/* La case : un emplacement creux dans la page, qui attend sa vignette */
+.vignette {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 1.5rem 1rem;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(46, 125, 90, 0.8) 0%, rgba(30, 95, 122, 0.8) 100%);
-  border: 2px solid rgba(255, 215, 0, 0.3);
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1.75rem 1rem 1.25rem;
+  border: 0;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
+  font: inherit;
+  color: inherit;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.championship-item::before {
-  content: '';
+.vignette-ref {
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+  left: 0;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--rayon-case) 0 var(--rayon-case) 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
 }
 
-.championship-item:hover {
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-  border-color: #FFD700;
+/* La vignette elle-même : collée de travers, elle se redresse au survol */
+.vignette-image {
+  display: grid;
+  place-items: center;
+  padding: 0.9rem;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: var(--ombre-vignette);
+  transform: rotate(-2.5deg);
+  transition: transform 0.25s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
-.championship-item:hover::before {
-  left: 100%;
+.vignette-image img {
+  display: block;
+  height: 96px;
+  width: auto;
+  object-fit: contain;
 }
 
-.championship-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  color: #FFFFFF;
-  font-size: 1rem;
-  text-align: center;
+.vignette-nom {
+  font-family: var(--condense);
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s;
+  text-align: center;
+  color: var(--encre);
 }
 
-.championship-item:hover .championship-name {
-  color: #FFD700;
-  transform: scale(1.05);
+.vignette:hover,
+.vignette:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: inset 0 0 0 2px var(--encre), var(--ombre-vignette);
 }
 
-img {
-  transition: all 0.3s;
-  filter: brightness(1);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 4px;
+.vignette:hover .vignette-image,
+.vignette:focus-visible .vignette-image {
+  transform: rotate(0deg) scale(1.04);
 }
 
-.championship-item:hover img {
-  filter: brightness(1.1);
-  transform: scale(1.05);
+.vignette:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  .planche {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .planche {
+    gap: 0.9rem;
+  }
+
+  .vignette-image img {
+    height: 64px;
+  }
+
+  .vignette-nom {
+    font-size: 0.9rem;
+  }
 }
 </style>

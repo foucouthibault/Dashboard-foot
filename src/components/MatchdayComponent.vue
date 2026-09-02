@@ -51,240 +51,170 @@ const isMatchFinished = (match: Match): boolean => match.status === 'FINISHED'
 </script>
 
 <template>
-  <div class="matchday-container">
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      Chargement des matchs...
-    </div>
-    <div v-else-if="error" class="error">
-      <span class="error-icon">⚠️</span>
-      {{ error }}
-    </div>
-    <div v-else>
-      <h2 class="matchday-title">Journée {{ currentMatchday }}</h2>
+  <div class="feuillet">
+    <header class="feuillet-entete">
+      <p class="surtitre feuillet-surtitre">Résultats</p>
+      <h2 class="feuillet-titre">Journée {{ currentMatchday }}</h2>
+    </header>
 
-      <div v-if="matches.length > 0" class="matches-list">
-        <div
+    <div class="feuillet-corps">
+      <p v-if="loading" class="etat">Chargement des matchs…</p>
+
+      <p v-else-if="error" class="etat etat-erreur">{{ error }}</p>
+
+      <ul v-else-if="matches.length > 0" class="matchs">
+        <li
           v-for="match in matches"
           :key="match.id"
-          class="match-card"
-          :class="{ finished: isMatchFinished(match) }"
+          class="match"
+          :class="{ 'match-joue': isMatchFinished(match) }"
         >
-          <div class="match-date">
-            {{ formatDate(match.utcDate) }}
+          <p class="match-date">{{ formatDate(match.utcDate) }}</p>
+
+          <div class="match-ligne">
+            <span class="match-equipe match-domicile">{{ match.homeTeam.name }}</span>
+
+            <span v-if="isMatchFinished(match)" class="score">
+              {{ match.score.fullTime.home }}<span class="score-tiret">–</span
+              >{{ match.score.fullTime.away }}
+            </span>
+            <span v-else class="attente">{{ getMatchStatus(match) }}</span>
+
+            <span class="match-equipe match-exterieur">{{ match.awayTeam.name }}</span>
           </div>
+        </li>
+      </ul>
 
-          <div class="match-content">
-            <div class="team home-team">
-              <span class="team-name">{{ match.homeTeam.name }}</span>
-            </div>
-
-            <div class="score">
-              <span v-if="isMatchFinished(match)" class="score-value">
-                {{ match.score.fullTime.home }} - {{ match.score.fullTime.away }}
-              </span>
-              <span v-else class="status-badge">{{ getMatchStatus(match) }}</span>
-            </div>
-
-            <div class="team away-team">
-              <span class="team-name">{{ match.awayTeam.name }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div v-else class="empty-state">
-        Aucun match disponible pour cette journée
-      </div>
+      <p v-else class="etat">Aucun match programmé pour cette journée.</p>
     </div>
   </div>
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap');
-
-.matchday-container {
-  padding: 1.5rem;
-  background: linear-gradient(180deg, rgba(46, 125, 90, 0.6) 0%, rgba(30, 95, 122, 0.6) 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.matchday-title {
-  font-family: 'Bebas Neue', sans-serif;
-  color: #FFD700;
-  font-size: 1.5rem;
-  margin: 0 0 1.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.loading {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: center;
-  padding: 2rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1rem;
-  font-family: 'Inter', sans-serif;
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 215, 0, 0.3);
-  border-top-color: #FFD700;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  justify-content: center;
-  padding: 1.5rem;
-  color: #D32F2F;
-  font-size: 0.95rem;
-  font-family: 'Inter', sans-serif;
-  background: rgba(211, 47, 47, 0.1);
-  border-radius: 8px;
-}
-
-.error-icon {
-  font-size: 1.2rem;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 2rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.95rem;
-  font-style: italic;
-  font-family: 'Inter', sans-serif;
-}
-
-.matches-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.match-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  border-left: 4px solid rgba(255, 255, 255, 0.2);
-  padding: 1.25rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  position: relative;
+/* Le feuillet : la page de droite, imprimée séparément et collée */
+.feuillet {
+  border: 2px solid var(--encre);
+  border-radius: var(--rayon-page);
+  background: var(--papier);
+  box-shadow: var(--ombre-page);
   overflow: hidden;
 }
 
-.match-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 4px;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 165, 0, 0.8) 100%);
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.feuillet-entete {
+  padding: 1rem 1.25rem;
+  background-color: var(--encre);
+  background-image: var(--trame);
+  color: var(--papier);
 }
 
-.match-card:hover {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
-  transform: translateY(-2px);
+.feuillet-surtitre {
+  color: rgba(239, 227, 200, 0.6);
 }
 
-.match-card:hover::before {
-  transform: scaleY(1);
+.feuillet-titre {
+  margin-top: 0.15rem;
+  font-family: var(--display);
+  font-size: 1.5rem;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }
 
-.match-card.finished {
-  border-left-color: #4CAF50;
-  background: rgba(76, 175, 80, 0.05);
+.feuillet-corps {
+  padding: 1.25rem;
 }
 
-.match-card.finished::before {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+.etat {
+  padding: 1.5rem 0;
+  color: var(--encre-pale);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.matchs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.match {
+  padding: 0.7rem 0.85rem;
+  border-left: 4px solid var(--papier-bord);
+  background: rgba(21, 28, 59, 0.045);
+  border-radius: 0 6px 6px 0;
+  transition: background-color 0.2s ease;
+}
+
+.match:hover {
+  background: var(--papier-creux);
+}
+
+.match-joue {
+  border-left-color: var(--vert);
 }
 
 .match-date {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
-.match-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.team {
-  flex: 1;
-  text-align: center;
-}
-
-.team-name {
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  color: #FFFFFF;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.score {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 70px;
-  padding: 0.5rem 0.75rem;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 165, 0, 0.8) 100%);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-}
-
-.score-value {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 700;
-  color: #121212;
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-}
-
-.status-badge {
-  font-family: 'Bebas Neue', sans-serif;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 165, 0, 0.8) 100%);
-  color: #121212;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
+  margin-bottom: 0.4rem;
+  font-family: var(--chiffres);
   font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: var(--encre-pale);
 }
 
-.home-team {
+.match-ligne {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.match-equipe {
+  font-family: var(--condense);
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--encre);
+}
+
+.match-domicile {
   text-align: right;
 }
 
-.away-team {
+.match-exterieur {
   text-align: left;
+}
+
+/* Le score : encadré comme un cachet imprimé */
+.score {
+  padding: 0.28rem 0.6rem;
+  border-radius: 4px;
+  background: var(--encre);
+  color: var(--papier);
+  font-family: var(--chiffres);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.score-tiret {
+  padding: 0 0.22rem;
+  opacity: 0.6;
+}
+
+.attente {
+  padding: 0.28rem 0.6rem;
+  border: 1px solid var(--papier-bord);
+  border-radius: 4px;
+  font-family: var(--condense);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--encre-pale);
+  white-space: nowrap;
 }
 </style>

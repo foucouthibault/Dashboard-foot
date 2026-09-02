@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue'
+import type { ComponentPublicInstance } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStandingsStore } from '@/stores/standings'
 import { useCompetitionsStore } from '@/stores/competitions'
@@ -27,21 +28,31 @@ const scorersLimit = ref<number>(10)
 // Année actuelle pour la saison par défaut
 const currentYear = new Date().getFullYear()
 
-// Saisons disponibles (à adapter selon les données réelles)
-// L'API football-data.org attend l'année de début de saison (ex: "2025"),
-// on affiche en revanche le libellé complet (ex: "2025/2026")
+// L'API football-data.org attend l'année de début de saison (ex: "2025").
+// On affiche le libellé complet ("2025/2026") et, sur les tranches, la forme courte.
 interface SeasonOption {
   label: string
+  short: string
   value: string
 }
 
+const makeSeason = (debut: number): SeasonOption => ({
+  value: String(debut),
+  label: `${debut}/${debut + 1}`,
+  short: `${String(debut).slice(2)}/${String(debut + 1).slice(2)}`,
+})
+
 const availableSeasons = ref<SeasonOption[]>([
-  { label: `${currentYear}/${currentYear + 1}`, value: String(currentYear) },
-  { label: `${currentYear - 1}/${currentYear}`, value: String(currentYear - 1) },
-  { label: `${currentYear - 2}/${currentYear - 1}`, value: String(currentYear - 2) },
+  makeSeason(currentYear),
+  makeSeason(currentYear - 1),
+  makeSeason(currentYear - 2),
 ])
 
 const selectedSeason = ref<string>(availableSeasons.value[0].value)
+
+const selectedSeasonLabel = computed<string>(
+  () => availableSeasons.value.find(s => s.value === selectedSeason.value)?.label ?? '',
+)
 
 const goHome = (): void => {
   router.push({ name: 'home' })
@@ -49,8 +60,43 @@ const goHome = (): void => {
 
 const load = (): void => {
   // Charger les classements avec la saison sélectionnée
-  standingsStore.fetchStandings(championshipId.value, selectedSeason.value || undefined)
+  standingsStore.fetchStandings(championshipId.value, selectedSeason.value)
   competitionsStore.fetchCompetitions()
+}
+
+// ── L'étagère de tranches : navigation clavier du groupe de boutons radio ──
+const spines = ref<(HTMLButtonElement | null)[]>([])
+
+const setSpineRef = (el: Element | ComponentPublicInstance | null, index: number): void => {
+  spines.value[index] = el instanceof HTMLButtonElement ? el : null
+}
+
+const onSpineKeydown = (event: KeyboardEvent, index: number): void => {
+  const last = availableSeasons.value.length - 1
+  let next: number
+
+  switch (event.key) {
+    case 'ArrowRight':
+    case 'ArrowDown':
+      next = index === last ? 0 : index + 1
+      break
+    case 'ArrowLeft':
+    case 'ArrowUp':
+      next = index === 0 ? last : index - 1
+      break
+    case 'Home':
+      next = 0
+      break
+    case 'End':
+      next = last
+      break
+    default:
+      return
+  }
+
+  event.preventDefault()
+  selectedSeason.value = availableSeasons.value[next].value
+  spines.value[next]?.focus()
 }
 
 // Réinitialiser l'onglet et la saison quand on change de championnat
@@ -66,232 +112,294 @@ watch([championshipId, selectedSeason], load, { immediate: true })
 
 <template>
   <div class="championship-view">
-    <!-- Bannière du championnat -->
     <LeagueBanner
       v-if="competition"
       :competition="competition"
+      :season="selectedSeasonLabel"
       @back="goHome"
     />
 
-    <!-- Contenu principal -->
-    <div class="content-wrapper">
-      <!-- Colonne gauche : onglets + tableau -->
-      <div class="left-section">
-        <!-- Contrôles de filtre -->
-        <div class="filters-bar">
-          <div class="filter-group">
-            <label for="season-select" class="filter-label">Saison:</label>
-            <select
-              id="season-select"
-              v-model="selectedSeason"
-              class="filter-select"
-            >
-              <option v-for="season in availableSeasons" :key="season.value" :value="season.value">
-                {{ season.label }}
-              </option>
-            </select>
-          </div>
+    <div class="reliure">
+      <!-- Page de gauche : la saison, puis le classement ou les buteurs -->
+      <section class="page page-gauche">
+        <div class="etagere">
+          <p id="etiquette-saison" class="surtitre etagere-titre">Saison</p>
 
-          <div class="filter-group" v-if="activeTab === 'scorers'">
-            <label for="limit-select" class="filter-label">Nombre de buteurs:</label>
-            <select
-              id="limit-select"
-              v-model.number="scorersLimit"
-              class="filter-select"
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select>
+          <div class="etagere-rangee">
+            <div class="tranches" role="radiogroup" aria-labelledby="etiquette-saison">
+              <button
+                v-for="(season, index) in availableSeasons"
+                :key="season.value"
+                :ref="el => setSpineRef(el, index)"
+                type="button"
+                role="radio"
+                class="tranche"
+                :class="{ 'tranche-active': season.value === selectedSeason }"
+                :aria-checked="season.value === selectedSeason"
+                :aria-label="`Saison ${season.label}`"
+                :tabindex="season.value === selectedSeason ? 0 : -1"
+                @click="selectedSeason = season.value"
+                @keydown="onSpineKeydown($event, index)"
+              >
+                <span class="tranche-annee">{{ season.short }}</span>
+              </button>
+            </div>
+
+            <p class="etagere-courante">{{ selectedSeasonLabel }}</p>
           </div>
         </div>
 
-        <div class="tabs">
+        <div class="onglets">
           <button
-            class="tab-btn"
-            :class="{ active: activeTab === 'standings' }"
+            type="button"
+            class="onglet"
+            :class="{ 'onglet-actif': activeTab === 'standings' }"
+            :aria-pressed="activeTab === 'standings'"
             @click="activeTab = 'standings'"
           >
-            📊 Classement
+            Classement
           </button>
           <button
-            class="tab-btn"
-            :class="{ active: activeTab === 'scorers' }"
+            type="button"
+            class="onglet"
+            :class="{ 'onglet-actif': activeTab === 'scorers' }"
+            :aria-pressed="activeTab === 'scorers'"
             @click="activeTab = 'scorers'"
           >
-            ⚽ Buteurs
+            Buteurs
           </button>
+
+          <label v-if="activeTab === 'scorers'" class="reglage">
+            <span class="reglage-texte">Afficher</span>
+            <select v-model.number="scorersLimit" class="reglage-champ">
+              <option :value="5">5</option>
+              <option :value="10">10</option>
+              <option :value="20">20</option>
+              <option :value="50">50</option>
+            </select>
+          </label>
         </div>
 
         <StandingsComponent
           v-if="activeTab === 'standings'"
-          :rows="standingsStore.getRows(championshipId, selectedSeason || undefined)"
-          :loading="standingsStore.isLoading(championshipId, selectedSeason || undefined)"
-          :error="standingsStore.getError(championshipId, selectedSeason || undefined)"
+          :rows="standingsStore.getRows(championshipId, selectedSeason)"
+          :loading="standingsStore.isLoading(championshipId, selectedSeason)"
+          :error="standingsStore.getError(championshipId, selectedSeason)"
         />
         <ScorersComponent
-          v-if="activeTab === 'scorers'"
+          v-else
           :championship-id="championshipId"
           :limit="scorersLimit"
         />
-      </div>
+      </section>
 
-      <!-- Colonne droite : dernière journée -->
-      <div class="right-section">
+      <!-- Page de droite : la dernière journée -->
+      <aside class="page page-droite">
         <MatchdayComponent :championship-id="championshipId" />
-      </div>
+      </aside>
     </div>
   </div>
 </template>
 
 <style scoped>
 .championship-view {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  z-index: 1;
   width: 100%;
-  min-height: 100vh;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
 }
 
-/* Barre de filtres */
-.filters-bar {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.filter-label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
-}
-
-.filter-select {
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(20, 30, 40, 0.6);
-  color: #FFFFFF;
-  font-size: 0.9rem;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 140px;
-}
-
-.filter-select:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: #FFD700;
-  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
-}
-
-.filter-select option {
-  background: rgba(20, 30, 40, 0.9);
-  color: #FFFFFF;
-}
-
-.content-wrapper {
+/* La double page de l'album */
+.reliure {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  padding: 2rem 4rem;
-  width: 100%;
-  box-sizing: border-box;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 2.5rem;
+  margin-top: 2rem;
 }
 
-.left-section {
-  display: flex;
-  flex-direction: column;
+.page {
+  min-width: 0;
 }
 
-.right-section {
-  display: flex;
-  flex-direction: column;
+/* ── L'étagère : les saisons sont des tranches d'albums rangées ───────── */
+.etagere {
+  margin-bottom: 1.75rem;
 }
 
-.tabs {
+/* De l'air sous l'étiquette : l'album tiré dépasse vers le haut */
+.etagere-titre {
+  margin-bottom: 1.5rem;
+}
+
+.etagere-rangee {
   display: flex;
-  border-radius: 12px 12px 0 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.55rem;
+  /* Le rebord de l'étagère sur lequel les albums reposent */
+  border-bottom: 3px solid var(--encre);
+}
+
+.tranches {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+/* La saison en toutes lettres, au bout du rebord */
+.etagere-courante {
+  font-family: var(--chiffres);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: var(--encre);
+  white-space: nowrap;
+}
+
+.tranche {
+  position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  background: rgba(46, 125, 90, 0.8);
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 1rem 1.5rem;
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: 'Bebas Neue', sans-serif;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 88px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px 2px 0 0;
+  background: var(--encre);
+  background-image: var(--trame);
+  color: var(--papier);
   cursor: pointer;
-  transition: all 0.25s ease;
-  letter-spacing: 0.1em;
+  box-shadow: var(--ombre-vignette);
+  transition: transform 0.28s cubic-bezier(0.3, 1.3, 0.5, 1), background-color 0.2s ease;
+}
+
+/* Le liseré haut : la coiffe de l'album */
+.tranche::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6px;
+  background: rgba(239, 227, 200, 0.35);
+}
+
+.tranche-annee {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--chiffres);
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+}
+
+.tranche:hover {
+  transform: translateY(-5px);
+}
+
+/* L'album qu'on a tiré de l'étagère */
+.tranche-active {
+  background-color: var(--rouge);
+  transform: translateY(-14px);
+  height: 104px;
+  box-shadow: 0 3px 0 rgba(21, 28, 59, 0.25), 0 14px 22px -12px rgba(21, 28, 59, 0.7);
+}
+
+.tranche-active:hover {
+  transform: translateY(-16px);
+}
+
+/* ── Onglets : les intercalaires de la page ──────────────────────────── */
+.onglets {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--encre);
+}
+
+.onglet {
+  padding: 0.6rem 1.15rem;
+  border: 2px solid var(--encre);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: -2px;
+  background: transparent;
+  color: var(--encre);
+  font-family: var(--condense);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tab-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+.onglet:hover {
+  background: var(--papier-creux);
 }
 
-.tab-btn.active {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
-  color: #FFD700;
-  border-bottom: 3px solid #FFD700;
+.onglet-actif {
+  background: var(--encre);
+  color: var(--papier);
 }
 
-@media (max-width: 1200px) {
-  .content-wrapper {
+.onglet-actif:hover {
+  background: var(--encre);
+}
+
+/* Le réglage du nombre de buteurs, poussé en bout de ligne */
+.reglage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  padding-bottom: 0.5rem;
+  font-family: var(--condense);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--encre-pale);
+}
+
+.reglage-champ {
+  padding: 0.3rem 0.5rem;
+  border: 2px solid var(--encre);
+  border-radius: 4px;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--chiffres);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .reliure {
     grid-template-columns: 1fr;
+    gap: 3rem;
   }
 }
 
-/* Responsive pour les filtres */
-@media (max-width: 768px) {
-  .filters-bar {
-    gap: 1rem;
+@media (max-width: 640px) {
+  .championship-view {
+    padding: 1rem 1rem 3rem;
   }
 
-  .filter-select {
-    min-width: 120px;
-    font-size: 0.85rem;
+  .onglets {
+    flex-wrap: wrap;
   }
 
-  .filter-label {
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .filters-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filter-group {
-    justify-content: space-between;
-  }
-
-  .filter-select {
+  .reglage {
+    margin-left: 0;
     width: 100%;
-    min-width: auto;
+    padding-top: 0.5rem;
+  }
+
+  .onglet {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
   }
 }
 </style>
-

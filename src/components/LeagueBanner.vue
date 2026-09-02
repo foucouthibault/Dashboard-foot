@@ -14,259 +14,157 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { leagueData } = useLeagueData(props.competition)
+// Getter : la bannière suit le championnat courant même sans remontage du composant
+const { leagueData } = useLeagueData(() => props.competition)
 </script>
 
 <template>
-  <div
-    class="league-banner"
-    :style="{
-      background: `linear-gradient(135deg, ${leagueData.gradient.from}, ${leagueData.gradient.to})`,
-    }"
-    role="banner"
-    :aria-label="`Bannière du championnat: ${leagueData.name}`"
-  >
-    <!-- Bouton de retour intégré -->
-    <button type="button" class="banner-back-btn" @click="emit('back')" aria-label="Retour à tous les championnats">
-      <span class="banner-back-icon">←</span>
+  <header class="bandeau">
+    <button type="button" class="retour" @click="emit('back')">
+      <span class="retour-fleche" aria-hidden="true">←</span>
+      Championnats
     </button>
 
-    <!-- Groupe logo + texte (centré) -->
-    <div class="banner-center-group">
-      <!-- Logo ou icône -->
-      <div class="banner-logo">
+    <div
+      class="titre-bloc"
+      :style="{ backgroundColor: leagueData.colors.bg, color: leagueData.colors.text }"
+    >
+      <span class="ecusson">
         <img
           v-if="leagueData.emblem"
           :src="leagueData.emblem"
-          :alt="`Logo ${leagueData.name}`"
-          class="logo-image"
+          alt=""
+          class="ecusson-image"
         />
-        <span v-else class="logo-fallback">{{ leagueData.icon }}</span>
-      </div>
+        <span v-else class="ecusson-defaut" aria-hidden="true">{{ leagueData.icon }}</span>
+      </span>
 
-      <!-- Contenu texte -->
-      <div class="banner-content">
-        <h1 class="banner-title">{{ leagueData.name }}</h1>
-        <p v-if="props.season" class="banner-season">Saison {{ props.season }}</p>
+      <div class="titre-texte">
+        <h1 class="titre">{{ leagueData.name }}</h1>
+        <p v-if="props.season" class="saison">Saison {{ props.season }}</p>
       </div>
     </div>
 
-    <!-- Décoration -->
-    <div class="banner-decoration">
-      <span class="decoration-icon">{{ leagueData.icon }}</span>
-    </div>
-  </div>
+    <span
+      class="filet"
+      :style="{ backgroundColor: leagueData.colors.accent || leagueData.colors.border }"
+      aria-hidden="true"
+    ></span>
+  </header>
 </template>
 
-
-
 <style scoped>
-.league-banner {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem 2rem;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  z-index: 1;
+.bandeau {
   width: 100%;
-  box-sizing: border-box;
 }
 
-/* Motif de terrain de foot en arrière-plan */
-.league-banner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 10px,
-      rgba(255, 255, 255, 0.05) 10px,
-      rgba(255, 255, 255, 0.05) 20px
-    );
-  opacity: 0.3;
-  pointer-events: none;
-}
-
-.banner-back-btn {
+/* Le retour : nommé par sa destination, pas par une flèche seule */
+.retour {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  line-height: 1;
-  background: rgba(0, 0, 0, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
-  min-height: 40px;
-  color: white;
-  font-size: 1.125rem;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem 0.4rem 0.6rem;
+  margin-bottom: 1rem;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--encre);
+  font-family: var(--condense);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-  justify-self: start;
-  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.banner-back-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: white;
-  transform: scale(1.05);
+.retour:hover {
+  background: var(--encre);
+  color: var(--papier);
 }
 
-.banner-back-icon {
+.retour-fleche {
+  font-size: 1rem;
   line-height: 1;
-  display: inline-block;
-  vertical-align: middle;
-  transform: translateY(-1px);
 }
 
-.banner-logo {
-  flex-shrink: 0;
-}
-
-.logo-image {
-  height: 40px;
-  width: auto;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.logo-fallback {
-  font-size: 2rem;
-}
-
-.banner-center-group {
+/* Le bandeau de tête de page : un aplat saturé aux couleurs de la ligue */
+.titre-bloc {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  justify-content: center;
-  grid-column: 2;
+  gap: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: var(--rayon-page) var(--rayon-page) 0 0;
+  background-image: var(--trame);
+  box-shadow: var(--ombre-page);
 }
 
-.banner-content {
-  text-align: left;
+.ecusson {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 68px;
+  height: 68px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: var(--ombre-vignette);
 }
 
-.banner-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  font-family: 'Inter', sans-serif;
+.ecusson-image {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
 }
 
-.banner-season {
-  margin: 0.25rem 0 0 0;
-  font-size: 0.875rem;
-  opacity: 0.9;
-  font-weight: 400;
-}
-
-.banner-decoration {
-  opacity: 0.8;
-  justify-self: end;
-}
-
-.decoration-icon {
+.ecusson-defaut {
   font-size: 2rem;
-  animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+.titre {
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 4.5vw, 2.75rem);
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  /* Le repérage décalé, comme sur la couverture */
+  text-shadow: 2px -2px 0 rgba(216, 39, 44, 0.9);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .league-banner {
-    padding: 1rem;
-    gap: 0.75rem;
-    grid-template-columns: auto 1fr;
-  }
-
-  .banner-back-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-  }
-
-  .banner-center-group {
-    gap: 1rem;
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-  }
-
-  .banner-decoration {
-    display: none;
-  }
-
-  .banner-title {
-    font-size: 1.25rem;
-  }
-
-  .banner-season {
-    font-size: 0.75rem;
-  }
-
-  .logo-image {
-    height: 32px;
-  }
-
-  .logo-fallback {
-    font-size: 1.5rem;
-  }
-
-  .banner-content {
-    text-align: left;
-  }
+.saison {
+  margin-top: 0.5rem;
+  font-family: var(--chiffres);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
 }
 
-@media (max-width: 480px) {
-  .league-banner {
-    padding: 0.75rem;
-    grid-template-columns: auto 1fr;
+/* Le filet coloré qui ferme la tête de page */
+.filet {
+  display: block;
+  height: 8px;
+  border-radius: 0 0 var(--rayon-page) var(--rayon-page);
+}
+
+@media (max-width: 640px) {
+  .titre-bloc {
+    gap: 0.9rem;
+    padding: 1.1rem 1.1rem;
   }
 
-  .banner-title {
-    font-size: 1rem;
+  .ecusson {
+    width: 52px;
+    height: 52px;
   }
 
-  .banner-season {
-    display: none;
+  .ecusson-image {
+    width: 34px;
+    height: 34px;
   }
 
-  .banner-center-group {
-    gap: 0.5rem;
-  }
-
-  .logo-container {
-    width: 40px;
-    height: 40px;
-  }
-
-  .logo-image {
-    height: 28px;
-  }
-
-  .logo-fallback {
-    font-size: 1.25rem;
-  }
-
-  .banner-back-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 0.875rem;
+  .saison {
+    font-size: 0.78rem;
   }
 }
 </style>
