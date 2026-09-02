@@ -131,11 +131,6 @@ const isMatchFinished = (match: Match): boolean => match.status === 'FINISHED'
   line-height: 1.5;
 }
 
-.etat-erreur {
-  color: var(--rouge);
-  font-weight: 500;
-}
-
 .matchs {
   display: flex;
   flex-direction: column;

@@ -4,7 +4,7 @@
    Papier ivoire, aplats saturés, cases serties numérotées, foil sur le leader.
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Bowlby+One&family=DM+Mono:wght@400;500&family=Saira:wght@400;500;600&family=Saira+Condensed:wght@600;700&display=swap');
+/* Polices chargées via <link> dans index.html (preconnect + non bloquant) */
 
 :root {
   /* ── Encres ─────────────────────────────────────────────────────────── */
@@ -111,6 +111,14 @@ body {
   border-radius: var(--rayon-case);
   background: var(--papier-creux);
   box-shadow: inset 0 0 0 2px rgba(21, 28, 59, 0.16), inset 0 2px 6px rgba(21, 28, 59, 0.14);
+}
+
+/* État d'erreur des listes/tableaux : identique partout où il apparaît.
+   !important nécessaire : le sélecteur .etat scoped des composants (spécificité
+   relevée par l'attribut data-v-* de Vue) écraserait sinon cette couleur. */
+.etat-erreur {
+  color: var(--rouge) !important;
+  font-weight: 500;
 }
 
 /* Numéro de vignette : la pastille en angle de case */

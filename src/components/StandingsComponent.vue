@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { PLACEHOLDER_CREST } from '@/constants/placeholders'
 import type { StandingRow } from '@/types'
 
 interface Props {
@@ -12,9 +14,9 @@ const props = withDefaults(defineProps<Props>(), {
   error: null,
 })
 
-// Vignette manquante : la silhouette imprimée dans la case vide
-const PLACEHOLDER_CREST =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="%23dfcea8" rx="4"/><circle cx="12" cy="12" r="6" fill="%23151c3b"/><circle cx="12" cy="12" r="3" fill="%23efe3c8"/></svg>'
+// Rejoue l'animation de pose des vignettes quand le jeu de lignes change
+// (ex : changement de saison), sans reconstruire tout le composant.
+const rowsKey = computed(() => props.rows.map(row => row.team.id).join('-'))
 </script>
 
 <template>
@@ -41,7 +43,7 @@ const PLACEHOLDER_CREST =
         </tr>
       </thead>
 
-      <tbody>
+      <tbody :key="rowsKey">
         <tr
           v-for="(row, index) in props.rows"
           :key="row.team.id"
@@ -104,11 +106,6 @@ const PLACEHOLDER_CREST =
   color: var(--encre-pale);
   font-size: 1rem;
   line-height: 1.5;
-}
-
-.etat-erreur {
-  color: var(--rouge);
-  font-weight: 500;
 }
 
 /* ── La planche de vignettes ─────────────────────────────────────────── */

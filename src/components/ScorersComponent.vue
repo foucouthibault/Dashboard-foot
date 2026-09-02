@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, onMounted } from 'vue'
 import { useScorersStore } from '@/stores/scorers'
+import { PLACEHOLDER_CREST } from '@/constants/placeholders'
 import type { Scorer } from '@/types'
 
 interface Props {
@@ -18,9 +19,6 @@ const scorersStore = useScorersStore()
 const scorers = computed<Scorer[]>(() => scorersStore.getScorers(props.championshipId, props.limit))
 const loading = computed<boolean>(() => scorersStore.isLoading(props.championshipId, props.limit))
 const error = computed<string | null>(() => scorersStore.getError(props.championshipId, props.limit))
-
-const PLACEHOLDER_CREST =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="%23dfcea8" rx="12"/><circle cx="12" cy="12" r="8" fill="%23151c3b"/><circle cx="12" cy="12" r="4" fill="%23efe3c8"/></svg>'
 
 onMounted(() => scorersStore.fetchScorers(props.championshipId, props.limit))
 
@@ -101,11 +99,6 @@ watch(
   color: var(--encre-pale);
   font-size: 1rem;
   line-height: 1.5;
-}
-
-.etat-erreur {
-  color: var(--rouge);
-  font-weight: 500;
 }
 
 .tableau {

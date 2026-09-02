@@ -39,8 +39,13 @@ export const useStandingsStore = defineStore('standings', () => {
       // L'API renvoie un tableau TOTAL, HOME et AWAY par groupe : on ne garde que TOTAL
       // pour éviter de dupliquer chaque équipe. Pour les compétitions avec groupes
       // (comme la Coupe du Monde), on aplatit ensuite tous les groupes TOTAL.
-      const allRows =
-        data.standings?.filter(group => group.type === 'TOTAL').flatMap(group => group.table) ?? []
+      const totalGroups = data.standings?.filter(group => group.type === 'TOTAL') ?? []
+      if ((data.standings?.length ?? 0) > 0 && totalGroups.length === 0) {
+        // La compétition a bien des groupes, mais aucun n'est de type TOTAL : format
+        // API inattendu plutôt qu'un classement légitimement vide.
+        console.error('Réponse standings inattendue : aucun groupe TOTAL trouvé', data.standings)
+      }
+      const allRows = totalGroups.flatMap(group => group.table)
       cache.value[cacheKey] = {
         rows: allRows,
         fetchedAt: Date.now(),

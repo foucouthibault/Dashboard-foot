@@ -2,9 +2,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompetitionsStore } from '@/stores/competitions'
-
-const PLACEHOLDER_EMBLEM =
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><rect width="100%" height="100%" fill="%23dfcea8"/><circle cx="60" cy="40" r="20" fill="%23151c3b"/><circle cx="60" cy="40" r="10" fill="%23efe3c8"/></svg>'
+import { PLACEHOLDER_EMBLEM } from '@/constants/placeholders'
 
 const router = useRouter()
 const competitionsStore = useCompetitionsStore()
@@ -49,11 +47,6 @@ const selectChampionship = (id: string): void => {
   padding: 2.5rem 0;
   color: var(--encre-pale);
   font-size: 1rem;
-}
-
-.etat-erreur {
-  color: var(--rouge);
-  font-weight: 500;
 }
 
 /* La planche de l'album : une grille régulière, comme une page de cases */

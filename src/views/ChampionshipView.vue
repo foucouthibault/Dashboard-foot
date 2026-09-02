@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, watch, ref } from 'vue'
+import { computed, watch, ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStandingsStore } from '@/stores/standings'
 import { useCompetitionsStore } from '@/stores/competitions'
-import { useScorersStore } from '@/stores/scorers'
 import StandingsComponent from '@/components/StandingsComponent.vue'
 import MatchdayComponent from '@/components/MatchdayComponent.vue'
 import ScorersComponent from '@/components/ScorersComponent.vue'
@@ -13,7 +12,6 @@ import LeagueBanner from '@/components/LeagueBanner.vue'
 const route = useRoute()
 const router = useRouter()
 const standingsStore = useStandingsStore()
-const scorersStore = useScorersStore()
 const competitionsStore = useCompetitionsStore()
 
 const championshipId = computed<string>(() => String(route.params.id))
@@ -62,22 +60,15 @@ const goHome = (): void => {
 
 const load = (): void => {
   // Charger les classements avec la saison sélectionnée
-  standingsStore.fetchStandings(championshipId.value, selectedSeason.value || undefined)
+  standingsStore.fetchStandings(championshipId.value, selectedSeason.value)
   competitionsStore.fetchCompetitions()
 }
 
-// Charger les buteurs avec la limite sélectionnée
-const loadScorers = (): void => {
-  if (activeTab.value === 'scorers') {
-    scorersStore.fetchScorers(championshipId.value, scorersLimit.value)
-  }
-}
-
 // ── L'étagère de tranches : navigation clavier du groupe de boutons radio ──
-const spines = ref<HTMLButtonElement[]>([])
+const spines = ref<(HTMLButtonElement | null)[]>([])
 
 const setSpineRef = (el: Element | ComponentPublicInstance | null, index: number): void => {
-  if (el instanceof HTMLButtonElement) spines.value[index] = el
+  spines.value[index] = el instanceof HTMLButtonElement ? el : null
 }
 
 const onSpineKeydown = (event: KeyboardEvent, index: number): void => {
@@ -108,32 +99,15 @@ const onSpineKeydown = (event: KeyboardEvent, index: number): void => {
   spines.value[next]?.focus()
 }
 
-// Réagir au changement de saison
-watch(selectedSeason, () => {
-  load()
-})
-
-// Réagir au changement de limite
-watch(scorersLimit, () => {
-  loadScorers()
-})
-
-onMounted(() => {
-  load()
-})
-
+// Réinitialiser l'onglet et la saison quand on change de championnat
 watch(championshipId, () => {
   activeTab.value = 'standings'
-  // Réinitialiser la saison sur le championnat suivant
-  const defaultSeason = availableSeasons.value[0].value
-  if (selectedSeason.value === defaultSeason) {
-    // La saison ne change pas, il faut déclencher le chargement manuellement
-    load()
-  } else {
-    // Le watcher sur selectedSeason se charge de recharger les données
-    selectedSeason.value = defaultSeason
-  }
+  selectedSeason.value = availableSeasons.value[0].value
 })
+
+// Charger les classements dès le montage, puis à chaque changement de
+// championnat ou de saison (le fetch des buteurs est géré par ScorersComponent).
+watch([championshipId, selectedSeason], load, { immediate: true })
 </script>
 
 <template>
@@ -208,10 +182,9 @@ watch(championshipId, () => {
 
         <StandingsComponent
           v-if="activeTab === 'standings'"
-          :key="selectedSeason"
-          :rows="standingsStore.getRows(championshipId, selectedSeason || undefined)"
-          :loading="standingsStore.isLoading(championshipId, selectedSeason || undefined)"
-          :error="standingsStore.getError(championshipId, selectedSeason || undefined)"
+          :rows="standingsStore.getRows(championshipId, selectedSeason)"
+          :loading="standingsStore.isLoading(championshipId, selectedSeason)"
+          :error="standingsStore.getError(championshipId, selectedSeason)"
         />
         <ScorersComponent
           v-else
