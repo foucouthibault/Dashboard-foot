@@ -6,14 +6,10 @@ export async function getCompetitionStandings(
   season?: string
 ): Promise<StandingsResponse> {
   try {
-    let url = `/competitions/${competitionId}/standings`
-    
-    // Ajouter le paramètre season si fourni
-    if (season) {
-      url += `?season=${season}`
-    }
-    
-    const response = await apiClient.get<StandingsResponse>(url)
+    const response = await apiClient.get<StandingsResponse>(
+      `/competitions/${competitionId}/standings`,
+      { params: season ? { season } : undefined },
+    )
     return response.data
   } catch (error) {
     console.error('Error fetching standings:', error)

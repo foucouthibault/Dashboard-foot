@@ -171,7 +171,7 @@ watch([championshipId, selectedSeason], load, { immediate: true })
 
           <label v-if="activeTab === 'scorers'" class="reglage">
             <span class="reglage-texte">Afficher</span>
-            <select v-model="scorersLimit" class="reglage-champ">
+            <select v-model.number="scorersLimit" class="reglage-champ">
               <option :value="5">5</option>
               <option :value="10">10</option>
               <option :value="20">20</option>
