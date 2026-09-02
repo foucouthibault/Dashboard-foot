@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStandingsStore } from '@/stores/standings'
 import { useCompetitionsStore } from '@/stores/competitions'
@@ -7,7 +7,6 @@ import StandingsComponent from '@/components/StandingsComponent.vue'
 import MatchdayComponent from '@/components/MatchdayComponent.vue'
 import ScorersComponent from '@/components/ScorersComponent.vue'
 import LeagueBanner from '@/components/LeagueBanner.vue'
-import { ref } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,21 +21,47 @@ const competition = computed(() => {
   return competitionsStore.competitions.find(c => String(c.id) === championshipId.value)
 })
 
+// Paramètres pour les requêtes
+const scorersLimit = ref<number>(10)
+
+// Année actuelle pour la saison par défaut
+const currentYear = new Date().getFullYear()
+
+// Saisons disponibles (à adapter selon les données réelles)
+// L'API football-data.org attend l'année de début de saison (ex: "2025"),
+// on affiche en revanche le libellé complet (ex: "2025/2026")
+interface SeasonOption {
+  label: string
+  value: string
+}
+
+const availableSeasons = ref<SeasonOption[]>([
+  { label: `${currentYear}/${currentYear + 1}`, value: String(currentYear) },
+  { label: `${currentYear - 1}/${currentYear}`, value: String(currentYear - 1) },
+  { label: `${currentYear - 2}/${currentYear - 1}`, value: String(currentYear - 2) },
+])
+
+const selectedSeason = ref<string>(availableSeasons.value[0].value)
+
 const goHome = (): void => {
   router.push({ name: 'home' })
 }
 
 const load = (): void => {
-  standingsStore.fetchStandings(championshipId.value)
+  // Charger les classements avec la saison sélectionnée
+  standingsStore.fetchStandings(championshipId.value, selectedSeason.value || undefined)
   competitionsStore.fetchCompetitions()
 }
 
-onMounted(load)
-
+// Réinitialiser l'onglet et la saison quand on change de championnat
 watch(championshipId, () => {
   activeTab.value = 'standings'
-  load()
+  selectedSeason.value = availableSeasons.value[0].value
 })
+
+// Charger les classements dès le montage, puis à chaque changement de
+// championnat ou de saison (le fetch des buteurs est géré par ScorersComponent).
+watch([championshipId, selectedSeason], load, { immediate: true })
 </script>
 
 <template>
@@ -52,6 +77,36 @@ watch(championshipId, () => {
     <div class="content-wrapper">
       <!-- Colonne gauche : onglets + tableau -->
       <div class="left-section">
+        <!-- Contrôles de filtre -->
+        <div class="filters-bar">
+          <div class="filter-group">
+            <label for="season-select" class="filter-label">Saison:</label>
+            <select
+              id="season-select"
+              v-model="selectedSeason"
+              class="filter-select"
+            >
+              <option v-for="season in availableSeasons" :key="season.value" :value="season.value">
+                {{ season.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filter-group" v-if="activeTab === 'scorers'">
+            <label for="limit-select" class="filter-label">Nombre de buteurs:</label>
+            <select
+              id="limit-select"
+              v-model.number="scorersLimit"
+              class="filter-select"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
         <div class="tabs">
           <button
             class="tab-btn"
@@ -71,13 +126,14 @@ watch(championshipId, () => {
 
         <StandingsComponent
           v-if="activeTab === 'standings'"
-          :rows="standingsStore.getRows(championshipId)"
-          :loading="standingsStore.isLoading(championshipId)"
-          :error="standingsStore.getError(championshipId)"
+          :rows="standingsStore.getRows(championshipId, selectedSeason || undefined)"
+          :loading="standingsStore.isLoading(championshipId, selectedSeason || undefined)"
+          :error="standingsStore.getError(championshipId, selectedSeason || undefined)"
         />
         <ScorersComponent
           v-if="activeTab === 'scorers'"
           :championship-id="championshipId"
+          :limit="scorersLimit"
         />
       </div>
 
@@ -95,6 +151,56 @@ watch(championshipId, () => {
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
+}
+
+/* Barre de filtres */
+.filters-bar {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filter-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.filter-select {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 30, 40, 0.6);
+  color: #FFFFFF;
+  font-size: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.filter-select:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+}
+
+.filter-select option {
+  background: rgba(20, 30, 40, 0.9);
+  color: #FFFFFF;
 }
 
 .content-wrapper {
@@ -153,6 +259,38 @@ watch(championshipId, () => {
 @media (max-width: 1200px) {
   .content-wrapper {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive pour les filtres */
+@media (max-width: 768px) {
+  .filters-bar {
+    gap: 1rem;
+  }
+
+  .filter-select {
+    min-width: 120px;
+    font-size: 0.85rem;
+  }
+
+  .filter-label {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    justify-content: space-between;
+  }
+
+  .filter-select {
+    width: 100%;
+    min-width: auto;
   }
 }
 </style>

@@ -1,10 +1,14 @@
 import { apiClient } from './client'
 import type { ScorersResponse } from '@/types'
 
-export async function getCompetitionScorers(competitionId: string): Promise<ScorersResponse> {
+export async function getCompetitionScorers(
+  competitionId: string,
+  limit: number = 10
+): Promise<ScorersResponse> {
   try {
     const response = await apiClient.get<ScorersResponse>(
-      `/competitions/${competitionId}/scorers?limit=10`,
+      `/competitions/${competitionId}/scorers`,
+      { params: { limit } },
     )
     return response.data
   } catch (error) {

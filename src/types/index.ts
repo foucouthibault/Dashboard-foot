@@ -30,6 +30,9 @@ export interface StandingRow {
 }
 
 export interface StandingGroup {
+  stage: string
+  type: 'TOTAL' | 'HOME' | 'AWAY'
+  group: string | null
   table: StandingRow[]
 }
 

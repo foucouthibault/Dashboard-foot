@@ -5,26 +5,28 @@ import type { Scorer } from '@/types'
 
 interface Props {
   championshipId: string
+  limit?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   championshipId: 'FL1',
+  limit: 10,
 })
 
 const scorersStore = useScorersStore()
 
-const scorers = computed<Scorer[]>(() => scorersStore.getScorers(props.championshipId))
-const loading = computed<boolean>(() => scorersStore.isLoading(props.championshipId))
-const error = computed<string | null>(() => scorersStore.getError(props.championshipId))
+const scorers = computed<Scorer[]>(() => scorersStore.getScorers(props.championshipId, props.limit))
+const loading = computed<boolean>(() => scorersStore.isLoading(props.championshipId, props.limit))
+const error = computed<string | null>(() => scorersStore.getError(props.championshipId, props.limit))
 
 const PLACEHOLDER_CREST =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="%232E7D5A" rx="12"/><circle cx="12" cy="12" r="8" fill="%23FFFFFF"/><circle cx="12" cy="12" r="4" fill="%232E7D5A"/></svg>'
 
-onMounted(() => scorersStore.fetchScorers(props.championshipId))
+onMounted(() => scorersStore.fetchScorers(props.championshipId, props.limit))
 
 watch(
-  () => props.championshipId,
-  () => scorersStore.fetchScorers(props.championshipId),
+  () => [props.championshipId, props.limit],
+  () => scorersStore.fetchScorers(props.championshipId, props.limit),
 )
 </script>
 
