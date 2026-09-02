@@ -6,12 +6,10 @@ export async function getCompetitionScorers(
   limit: number = 10
 ): Promise<ScorersResponse> {
   try {
-    let url = `/competitions/${competitionId}/scorers`
-    
-    // Ajouter le paramètre limit
-    url += `?limit=${limit}`
-    
-    const response = await apiClient.get<ScorersResponse>(url)
+    const response = await apiClient.get<ScorersResponse>(
+      `/competitions/${competitionId}/scorers`,
+      { params: { limit } },
+    )
     return response.data
   } catch (error) {
     console.error('Error fetching scorers:', error)

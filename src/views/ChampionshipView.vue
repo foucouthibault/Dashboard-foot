@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, watch, ref } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStandingsStore } from '@/stores/standings'
 import { useCompetitionsStore } from '@/stores/competitions'
-import { useScorersStore } from '@/stores/scorers'
 import StandingsComponent from '@/components/StandingsComponent.vue'
 import MatchdayComponent from '@/components/MatchdayComponent.vue'
 import ScorersComponent from '@/components/ScorersComponent.vue'
@@ -12,7 +11,6 @@ import LeagueBanner from '@/components/LeagueBanner.vue'
 const route = useRoute()
 const router = useRouter()
 const standingsStore = useStandingsStore()
-const scorersStore = useScorersStore()
 const competitionsStore = useCompetitionsStore()
 
 const championshipId = computed<string>(() => String(route.params.id))
@@ -55,46 +53,15 @@ const load = (): void => {
   competitionsStore.fetchCompetitions()
 }
 
-// Charger les buteurs avec la limite sélectionnée
-const loadScorers = (): void => {
-  if (activeTab.value === 'scorers') {
-    scorersStore.fetchScorers(championshipId.value, scorersLimit.value)
-  }
-}
-
-// Réagir au changement de saison
-watch(selectedSeason, () => {
-  load()
-})
-
-// Réagir au changement de limite
-watch(scorersLimit, () => {
-  loadScorers()
-})
-
-onMounted(() => {
-  load()
-})
-
+// Réinitialiser l'onglet et la saison quand on change de championnat
 watch(championshipId, () => {
   activeTab.value = 'standings'
-  // Réinitialiser la saison sur le championnat suivant
-  const defaultSeason = availableSeasons.value[0].value
-  if (selectedSeason.value === defaultSeason) {
-    // La saison ne change pas, il faut déclencher le chargement manuellement
-    load()
-  } else {
-    // Le watcher sur selectedSeason se charge de recharger les données
-    selectedSeason.value = defaultSeason
-  }
+  selectedSeason.value = availableSeasons.value[0].value
 })
 
-// Charger les buteurs quand on change d'onglet
-watch(activeTab, (newTab) => {
-  if (newTab === 'scorers') {
-    loadScorers()
-  }
-})
+// Charger les classements dès le montage, puis à chaque changement de
+// championnat ou de saison (le fetch des buteurs est géré par ScorersComponent).
+watch([championshipId, selectedSeason], load, { immediate: true })
 </script>
 
 <template>
@@ -129,7 +96,7 @@ watch(activeTab, (newTab) => {
             <label for="limit-select" class="filter-label">Nombre de buteurs:</label>
             <select
               id="limit-select"
-              v-model="scorersLimit"
+              v-model.number="scorersLimit"
               class="filter-select"
             >
               <option value="5">5</option>
