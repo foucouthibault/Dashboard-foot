@@ -7,24 +7,32 @@ import type { Scorer } from '@/types'
 interface Props {
   championshipId: string
   limit?: number
+  season?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   championshipId: 'FL1',
   limit: 10,
+  season: undefined,
 })
 
 const scorersStore = useScorersStore()
 
-const scorers = computed<Scorer[]>(() => scorersStore.getScorers(props.championshipId, props.limit))
-const loading = computed<boolean>(() => scorersStore.isLoading(props.championshipId, props.limit))
-const error = computed<string | null>(() => scorersStore.getError(props.championshipId, props.limit))
+const scorers = computed<Scorer[]>(() =>
+  scorersStore.getScorers(props.championshipId, props.limit, props.season),
+)
+const loading = computed<boolean>(() =>
+  scorersStore.isLoading(props.championshipId, props.limit, props.season),
+)
+const error = computed<string | null>(() =>
+  scorersStore.getError(props.championshipId, props.limit, props.season),
+)
 
-onMounted(() => scorersStore.fetchScorers(props.championshipId, props.limit))
+onMounted(() => scorersStore.fetchScorers(props.championshipId, props.limit, props.season))
 
 watch(
-  () => [props.championshipId, props.limit],
-  () => scorersStore.fetchScorers(props.championshipId, props.limit),
+  () => [props.championshipId, props.limit, props.season],
+  () => scorersStore.fetchScorers(props.championshipId, props.limit, props.season),
 )
 </script>
 
