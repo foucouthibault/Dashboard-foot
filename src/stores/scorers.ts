@@ -15,27 +15,31 @@ export const useScorersStore = defineStore('scorers', () => {
   const loading = ref<Record<string, boolean>>({})
   const error = ref<Record<string, string | null>>({})
 
-  // Génère une clé de cache unique basée sur competitionId et limit
-  const getCacheKey = (competitionId: string, limit: number = 10): string => {
-    return `${competitionId}-${limit}`
+  // Génère une clé de cache unique basée sur competitionId, limit et season
+  const getCacheKey = (competitionId: string, limit: number = 10, season?: string): string => {
+    return season ? `${competitionId}-${limit}-${season}` : `${competitionId}-${limit}`
   }
 
-  const isStale = (competitionId: string, limit: number = 10): boolean => {
-    const key = getCacheKey(competitionId, limit)
+  const isStale = (competitionId: string, limit: number = 10, season?: string): boolean => {
+    const key = getCacheKey(competitionId, limit, season)
     const entry = cache.value[key]
     if (!entry) return true
     return Date.now() - entry.fetchedAt > CACHE_TTL
   }
 
-  const fetchScorers = async (competitionId: string, limit: number = 10): Promise<void> => {
-    const cacheKey = getCacheKey(competitionId, limit)
-    if (!isStale(competitionId, limit)) return
+  const fetchScorers = async (
+    competitionId: string,
+    limit: number = 10,
+    season?: string,
+  ): Promise<void> => {
+    const cacheKey = getCacheKey(competitionId, limit, season)
+    if (!isStale(competitionId, limit, season)) return
 
     loading.value[cacheKey] = true
     error.value[cacheKey] = null
 
     try {
-      const data = await getCompetitionScorers(competitionId, limit)
+      const data = await getCompetitionScorers(competitionId, limit, season)
       cache.value[cacheKey] = {
         scorers: data.scorers ?? [],
         fetchedAt: Date.now(),
@@ -48,21 +52,20 @@ export const useScorersStore = defineStore('scorers', () => {
     }
   }
 
-  const getScorers = (competitionId: string, limit: number = 10): Scorer[] => {
-    const cacheKey = getCacheKey(competitionId, limit)
+  const getScorers = (competitionId: string, limit: number = 10, season?: string): Scorer[] => {
+    const cacheKey = getCacheKey(competitionId, limit, season)
     return cache.value[cacheKey]?.scorers ?? []
   }
 
-  const isLoading = (competitionId: string, limit: number = 10): boolean => {
-    const cacheKey = getCacheKey(competitionId, limit)
+  const isLoading = (competitionId: string, limit: number = 10, season?: string): boolean => {
+    const cacheKey = getCacheKey(competitionId, limit, season)
     return loading.value[cacheKey] ?? false
   }
 
-  const getError = (competitionId: string, limit: number = 10): string | null => {
-    const cacheKey = getCacheKey(competitionId, limit)
+  const getError = (competitionId: string, limit: number = 10, season?: string): string | null => {
+    const cacheKey = getCacheKey(competitionId, limit, season)
     return error.value[cacheKey] ?? null
   }
 
   return { fetchScorers, getScorers, isLoading, getError }
 })
-

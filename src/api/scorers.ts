@@ -3,12 +3,13 @@ import type { ScorersResponse } from '@/types'
 
 export async function getCompetitionScorers(
   competitionId: string,
-  limit: number = 10
+  limit: number = 10,
+  season?: string
 ): Promise<ScorersResponse> {
   try {
     const response = await apiClient.get<ScorersResponse>(
       `/competitions/${competitionId}/scorers`,
-      { params: { limit } },
+      { params: season ? { limit, season } : { limit } },
     )
     return response.data
   } catch (error) {
