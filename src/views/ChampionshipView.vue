@@ -190,6 +190,7 @@ watch([championshipId, selectedSeason], load, { immediate: true })
           v-else
           :championship-id="championshipId"
           :limit="scorersLimit"
+          :season="selectedSeason"
         />
       </section>
 
