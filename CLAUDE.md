@@ -59,6 +59,16 @@ Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2
 Ajouter ou modifier un paramètre demande une branche dans chaque dépôt et deux PR qui se
 référencent ; mettre à jour `src/types/index.ts` en même temps.
 
+## Travailler à partir d'une issue
+
+- Les tâches sont des issues GitHub (`gh issue list`), une par PR, avec des critères de fin.
+  Étiquettes : `qualite`, `deploiement`, `tests`, `refacto`, `outillage`,
+  `fonctionnalite` (optionnel), `vitrine` (présentation du projet, en pause).
+- Avant de commencer : lire l'issue (`gh issue view <n>`) et vérifier que ses dépendances
+  sont fermées.
+- La PR reprend les critères de fin cochés et contient `Closes #<n>` pour fermer l'issue
+  au merge. Un critère non rempli est signalé dans la PR, pas coché.
+
 ## Conventions
 
 - Code, commentaires, textes affichés, noms de tests (`it('ne garde que …')`), commits et
