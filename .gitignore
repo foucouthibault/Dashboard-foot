@@ -32,3 +32,6 @@ coverage
 
 test-results/
 playwright-report/
+
+# Corps de PR écrit par Claude dans le workflow @claude (gh pr create --body-file)
+pr-body.md
