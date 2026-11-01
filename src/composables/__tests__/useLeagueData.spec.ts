@@ -3,11 +3,12 @@ import { reactive, ref } from 'vue'
 import { useLeagueData, LEAGUE_COLORS, LEAGUE_GRADIENTS } from '@/composables/useLeagueData'
 import type { Competition } from '@/types'
 
-const competition = (id: Competition['id'], name: string, emblem?: string | null): Competition => ({
-  id,
-  name,
-  emblem,
-})
+const competition = (
+  id: Competition['id'],
+  name: string,
+  emblem?: string | null,
+  code?: string,
+): Competition => ({ id, name, emblem, code })
 
 describe('useLeagueData', () => {
   it.each([
@@ -26,6 +27,7 @@ describe('useLeagueData', () => {
   })
 
   it.each([
+    [2000, 'WC', 'FIFA World Cup', 'WorldCup'],
     [2021, 'PL', 'Premier League', 'PremierLeague'],
     [2014, 'PD', 'La Liga', 'Liga'],
     [2002, 'BL1', 'Bundesliga', 'Bundesliga'],
@@ -53,26 +55,49 @@ describe('useLeagueData', () => {
     expect(leagueData.value.emblem).toBe('https://crests/fl1.png')
   })
 
-  it('utilise les valeurs par défaut pour une compétition inconnue', () => {
-    const { leagueId, leagueData } = useLeagueData(competition(2000, 'FIFA World Cup'))
+  it('reconnaît une compétition par son code quand son id est absent de la table', () => {
+    const { leagueId } = useLeagueData(competition(9999, 'Inconnu', null, 'FL1'))
+
+    expect(leagueId.value).toBe('Ligue1')
+  })
+
+  it("cherche dans l'ordre l'id, le code puis le nom", () => {
+    expect(useLeagueData(competition(2021, 'Ligue 1', null, 'SA')).leagueId.value).toBe(
+      'PremierLeague',
+    )
+    expect(useLeagueData(competition(9999, 'Ligue 1', null, 'SA')).leagueId.value).toBe('SerieA')
+  })
+
+  it('donne à la Coupe du monde son nom, son icône et ses couleurs', () => {
+    const { leagueData } = useLeagueData(competition(2000, 'FIFA World Cup', null, 'WC'))
+
+    expect(leagueData.value.name).toBe('Coupe du monde')
+    expect(leagueData.value.icon).toBe('🌍')
+    expect(leagueData.value.colors).toEqual(LEAGUE_COLORS.WorldCup)
+    expect(leagueData.value.colors).not.toEqual(LEAGUE_COLORS.default)
+    expect(leagueData.value.gradient).toEqual(LEAGUE_GRADIENTS.WorldCup)
+    expect(leagueData.value.gradient).not.toEqual(LEAGUE_GRADIENTS.default)
+  })
+
+  it('utilise les valeurs par défaut et le nom reçu pour une compétition inconnue', () => {
+    const { leagueId, leagueData } = useLeagueData(
+      competition(2001, 'UEFA Champions League', null, 'CL'),
+    )
 
     expect(leagueId.value).toBe('default')
     expect(leagueData.value).toEqual({
       id: 'default',
-      // Comportement actuel : LEAGUE_NAMES a une entrée `default`, donc le nom reçu
-      // n'est jamais utilisé. Probablement un bug, à mettre à jour avec sa correction.
-      name: 'Compétition',
+      name: 'UEFA Champions League',
       icon: '⚽',
       colors: LEAGUE_COLORS.default,
       gradient: LEAGUE_GRADIENTS.default,
-      emblem: undefined,
+      emblem: null,
     })
   })
 
-  it('accepte une compétition sans nom', () => {
-    const { leagueId } = useLeagueData({ id: 'CL' } as Competition)
-
-    expect(leagueId.value).toBe('default')
+  it('affiche « Compétition » pour une compétition inconnue sans nom', () => {
+    expect(useLeagueData(competition('CL', '')).leagueData.value.name).toBe('Compétition')
+    expect(useLeagueData({ id: 'CL' } as Competition).leagueData.value.name).toBe('Compétition')
   })
 
   it('suit le changement de compétition passé par un getter (navigation sans remontage)', () => {
