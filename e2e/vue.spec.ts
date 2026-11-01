@@ -102,3 +102,115 @@ test('une erreur de l’API est affichée à l’utilisateur', async ({ page }) 
 
   await expect(page.getByText('Impossible de charger les championnats')).toBeVisible()
 })
+
+// ── Sélecteur de saison et onglet buteurs ───────────────────────────────────
+
+// Horloge figée : les saisons proposées dépendent de l'année civile (2026, 2025, 2024).
+const NOW = new Date('2026-03-15T12:00:00Z')
+
+const standingsForSeason = (season: string) => ({
+  standings: [
+    {
+      stage: 'REGULAR_SEASON',
+      type: 'TOTAL',
+      group: null,
+      table: [standingRow(1, Number(season), `Champion ${season}`, 80)],
+    },
+  ],
+})
+
+const scorers = (count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    player: { id: i + 1, name: `Buteur ${i + 1}`, nationality: 'France' },
+    team: team(524, 'Paris Saint-Germain'),
+    goals: 30 - i,
+    assists: null,
+    penalties: null,
+  }))
+
+// Simule l'API en tenant compte de `season` et `limit`, et garde la trace des requêtes.
+const mockApiWithParams = async (page: Page): Promise<URL[]> => {
+  const requests: URL[] = []
+  await page.route('**/api/competitions/**', (route) => {
+    const url = new URL(route.request().url())
+    requests.push(url)
+    const resource = url.pathname.split('/')[4]
+    const season = url.searchParams.get('season') ?? 'aucune'
+
+    if (resource === 'standings') return json(route, standingsForSeason(season))
+    if (resource === 'matches') return json(route, MATCHES)
+    if (resource === 'scorers') {
+      return json(route, { scorers: scorers(Number(url.searchParams.get('limit') ?? 10)) })
+    }
+    return json(route, COMPETITIONS.FL1)
+  })
+  return requests
+}
+
+const requestsFor = (requests: URL[], resource: string) =>
+  requests.filter((url) => url.pathname.endsWith(`/${resource}`))
+
+test('les flèches du clavier changent de saison, le focus et le classement suivent', async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(NOW)
+  const requests = await mockApiWithParams(page)
+  await page.goto('/championship/2015')
+
+  const saisons = page.getByRole('radiogroup', { name: 'Saison' })
+  const saison2026 = saisons.getByRole('radio', { name: 'Saison 2026/2027' })
+  const saison2025 = saisons.getByRole('radio', { name: 'Saison 2025/2026' })
+  const saison2024 = saisons.getByRole('radio', { name: 'Saison 2024/2025' })
+  const table = page.getByRole('table')
+
+  await expect(saison2026).toHaveAttribute('aria-checked', 'true')
+  await expect(table.getByText('Champion 2026')).toBeVisible()
+
+  await saison2026.focus()
+  await page.keyboard.press('ArrowRight')
+
+  await expect(saison2025).toBeFocused()
+  await expect(saison2025).toHaveAttribute('aria-checked', 'true')
+  await expect(saison2026).toHaveAttribute('aria-checked', 'false')
+  await expect(table.getByText('Champion 2025')).toBeVisible()
+
+  // Depuis la première saison, la flèche gauche boucle sur la dernière
+  await page.keyboard.press('ArrowLeft')
+  await expect(saison2026).toBeFocused()
+  await page.keyboard.press('ArrowLeft')
+  await expect(saison2024).toBeFocused()
+  await expect(saison2024).toHaveAttribute('aria-checked', 'true')
+  await expect(table.getByText('Champion 2024')).toBeVisible()
+
+  expect(requestsFor(requests, 'standings').map((url) => url.searchParams.get('season'))).toEqual(
+    ['2026', '2025', '2024'],
+  )
+})
+
+test("l'onglet buteurs suit la saison choisie et le nombre de buteurs demandé", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(NOW)
+  const requests = await mockApiWithParams(page)
+  await page.goto('/championship/2015')
+
+  await page.getByRole('radio', { name: 'Saison 2025/2026' }).click()
+  await page.getByRole('button', { name: 'Buteurs' }).click()
+
+  await expect(page.getByRole('button', { name: 'Buteurs' })).toHaveAttribute('aria-pressed', 'true')
+  const lignes = page.getByRole('table').locator('tbody tr')
+  await expect(lignes).toHaveCount(10)
+  await expect(lignes.first()).toContainText('Buteur 1')
+
+  await page.getByRole('combobox').selectOption('5')
+  await expect(lignes).toHaveCount(5)
+
+  const scorersRequests = requestsFor(requests, 'scorers').map((url) => ({
+    season: url.searchParams.get('season'),
+    limit: url.searchParams.get('limit'),
+  }))
+  expect(scorersRequests).toEqual([
+    { season: '2025', limit: '10' },
+    { season: '2025', limit: '5' },
+  ])
+})
