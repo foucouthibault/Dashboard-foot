@@ -95,6 +95,10 @@ describe('useLeagueData', () => {
     })
   })
 
+  it("ignore les propriétés héritées d'Object dans la table des ligues", () => {
+    expect(useLeagueData(competition('constructor', 'toString')).leagueId.value).toBe('default')
+  })
+
   it('affiche « Compétition » pour une compétition inconnue sans nom', () => {
     expect(useLeagueData(competition('CL', '')).leagueData.value.name).toBe('Compétition')
     expect(useLeagueData({ id: 'CL' } as Competition).leagueData.value.name).toBe('Compétition')
