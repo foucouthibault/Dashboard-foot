@@ -33,8 +33,9 @@ Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2
   remontage du composant.
 - `src/views/` : `HomeView` (liste des championnats) et `ChampionshipView` (route
   `/championship/:id`, sélecteur de saison).
-- `src/types/index.ts` : types des réponses, qui sont le JSON de football-data.org relayé
-  tel quel par le backend.
+- `src/types/index.ts` : types des réponses du backend. Elles reprennent la structure de
+  football-data.org, réduite aux champs déclarés ici (records du paquet `model` côté
+  backend) : un champ absent de ces types n'est pas renvoyé par le backend.
 - Routeur en `createWebHistory` : un hébergeur doit rediriger toutes les routes vers
   `index.html`.
 
@@ -57,7 +58,10 @@ Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2
 
 `GET /api/competitions/{id}`, `/standings?season=`, `/matches`, `/scorers?limit=&season=`.
 Ajouter ou modifier un paramètre demande une branche dans chaque dépôt et deux PR qui se
-référencent ; mettre à jour `src/types/index.ts` en même temps.
+référencent ; mettre à jour `src/types/index.ts` en même temps. Il en va de même pour lire
+un nouveau champ de football-data.org : il faut l'ajouter au record correspondant du
+backend, sinon il n'arrive pas jusqu'au frontend. Les erreurs du backend ont la forme
+`{"error": "…"}` ; une erreur de football-data.org est relayée avec son statut et son corps.
 
 ## Travailler à partir d'une issue
 
