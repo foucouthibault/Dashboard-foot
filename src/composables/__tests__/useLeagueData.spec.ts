@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { reactive, ref } from 'vue'
-import { useLeagueData, LEAGUE_COLORS, LEAGUE_GRADIENTS } from '@/composables/useLeagueData'
+import { useLeagueData, LEAGUE_COLORS } from '@/composables/useLeagueData'
 import type { Competition } from '@/types'
 
 const competition = (
@@ -23,7 +23,6 @@ describe('useLeagueData', () => {
     expect(leagueData.value.name).toBe('Ligue 1 Uber Eats')
     expect(leagueData.value.icon).toBe('🏆')
     expect(leagueData.value.colors).toEqual(LEAGUE_COLORS.Ligue1)
-    expect(leagueData.value.gradient).toEqual(LEAGUE_GRADIENTS.Ligue1)
   })
 
   it.each([
@@ -75,8 +74,6 @@ describe('useLeagueData', () => {
     expect(leagueData.value.icon).toBe('🌍')
     expect(leagueData.value.colors).toEqual(LEAGUE_COLORS.WorldCup)
     expect(leagueData.value.colors).not.toEqual(LEAGUE_COLORS.default)
-    expect(leagueData.value.gradient).toEqual(LEAGUE_GRADIENTS.WorldCup)
-    expect(leagueData.value.gradient).not.toEqual(LEAGUE_GRADIENTS.default)
   })
 
   it('utilise les valeurs par défaut et le nom reçu pour une compétition inconnue', () => {
@@ -90,7 +87,6 @@ describe('useLeagueData', () => {
       name: 'UEFA Champions League',
       icon: '⚽',
       colors: LEAGUE_COLORS.default,
-      gradient: LEAGUE_GRADIENTS.default,
       emblem: null,
     })
   })
