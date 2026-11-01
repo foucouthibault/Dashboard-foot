@@ -60,8 +60,10 @@ Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2
 Ajouter ou modifier un paramètre demande une branche dans chaque dépôt et deux PR qui se
 référencent ; mettre à jour `src/types/index.ts` en même temps. Il en va de même pour lire
 un nouveau champ de football-data.org : il faut l'ajouter au record correspondant du
-backend, sinon il n'arrive pas jusqu'au frontend. Les erreurs du backend ont la forme
-`{"error": "…"}` ; une erreur de football-data.org est relayée avec son statut et son corps.
+backend, sinon il n'arrive pas jusqu'au frontend. Les erreurs du backend sont des
+`ProblemDetail` (RFC 9457, `application/problem+json`) : `{"title", "status", "detail"}` ;
+une erreur de football-data.org garde son statut, pas son corps. Le frontend n'affiche
+jamais ce corps : chaque store a son propre message d'erreur.
 
 ## Travailler à partir d'une issue
 
