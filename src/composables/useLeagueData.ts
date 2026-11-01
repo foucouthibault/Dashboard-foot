@@ -43,7 +43,7 @@ const LEAGUE_MAPPINGS: Record<string, KnownLeagueId> = {
 }
 
 // Les tables suivantes sont indexées par LeagueId : TypeScript refuse une ligue
-// à laquelle il manquerait un nom, une icône, des couleurs ou un dégradé.
+// à laquelle il manquerait un nom, une icône ou des couleurs.
 
 // Noms affichés pour chaque ligue (`default` ne sert que si la compétition n'a pas de nom)
 const LEAGUE_NAMES: Record<LeagueId, string> = {
@@ -124,21 +124,6 @@ const LEAGUE_COLORS: Record<
   },
 }
 
-// Couleurs des dégradés pour chaque ligue
-const LEAGUE_GRADIENTS: Record<LeagueId, { from: string; to: string }> = {
-  default: {
-    from: '#6b7280',
-    to: '#9ca3af',
-  },
-  Ligue1: { from: '#1e3a8a', to: '#3b82f6' },
-  PremierLeague: { from: '#b91c1c', to: '#ef4444' },
-  Liga: { from: '#ea580c', to: '#f97316' },
-  Bundesliga: { from: '#000000', to: '#1f2937' },
-  SerieA: { from: '#166534', to: '#22c55e' },
-  Ligue2: { from: '#2563eb', to: '#3b82f6' },
-  WorldCup: { from: '#7f1d1d', to: '#b91c1c' },
-}
-
 // Détermine l'ID de la ligue : par l'id, puis le code, puis le nom de la compétition
 // (une Map ignore les propriétés héritées d'Object, comme `constructor` ou `toString`).
 const LEAGUE_BY_KEY = new Map(Object.entries(LEAGUE_MAPPINGS))
@@ -160,7 +145,6 @@ const getLeagueData = (competition: Competition) => {
     name: id === 'default' ? competition.name || LEAGUE_NAMES.default : LEAGUE_NAMES[id],
     icon: LEAGUE_ICONS[id],
     colors: LEAGUE_COLORS[id],
-    gradient: LEAGUE_GRADIENTS[id],
     emblem: competition.emblem,
   }
 }
@@ -174,4 +158,4 @@ export const useLeagueData = (source: MaybeRefOrGetter<Competition>) => {
   return { leagueId, leagueData }
 }
 
-export { LEAGUE_MAPPINGS, LEAGUE_NAMES, LEAGUE_ICONS, LEAGUE_COLORS, LEAGUE_GRADIENTS }
+export { LEAGUE_COLORS }
