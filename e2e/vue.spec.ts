@@ -58,6 +58,14 @@ const MATCHES = {
 const json = (route: Route, body: unknown, status = 200) =>
   route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) })
 
+// Erreur au format du backend : ProblemDetail (RFC 9457).
+const problem = (route: Route, status: number, title: string, detail: string) =>
+  route.fulfill({
+    status,
+    contentType: 'application/problem+json',
+    body: JSON.stringify({ title, status, detail }),
+  })
+
 const mockApi = async (page: Page): Promise<void> => {
   await page.route('**/api/competitions/**', (route) => {
     const path = new URL(route.request().url()).pathname
@@ -68,7 +76,9 @@ const mockApi = async (page: Page): Promise<void> => {
     if (resource === 'scorers') return json(route, { scorers: [] })
 
     const competition = COMPETITIONS[id] ?? Object.values(COMPETITIONS).find((c) => String(c.id) === id)
-    return competition ? json(route, competition) : json(route, { error: 'Not found' }, 404)
+    return competition
+      ? json(route, competition)
+      : problem(route, 404, 'Not Found', "L'API football-data.org a répondu par une erreur")
   })
 }
 
@@ -97,7 +107,9 @@ test('ouvrir un championnat affiche son classement et sa dernière journée', as
 })
 
 test('une erreur de l’API est affichée à l’utilisateur', async ({ page }) => {
-  await page.route('**/api/competitions/**', (route) => json(route, { error: 'boom' }, 500))
+  await page.route('**/api/competitions/**', (route) =>
+    problem(route, 502, 'Bad Gateway', "Échec de l'appel à l'API football-data.org"),
+  )
   await page.goto('/')
 
   await expect(page.getByText('Impossible de charger les championnats')).toBeVisible()
