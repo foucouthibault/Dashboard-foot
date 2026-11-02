@@ -15,6 +15,7 @@ npm run type-check      # vue-tsc
 npm test                # tests unitaires Vitest
 npm run test:coverage   # idem + coverage/lcov.info (lu par Sonar)
 npm run build           # type-check + build de production
+npm run api:sync        # télécharge openapi.json du backend (main) et régénère ses types
 npx playwright test --project=chromium   # tests E2E (lance lui-même le serveur)
 ```
 
@@ -33,6 +34,9 @@ Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2
   remontage du composant.
 - `src/views/` : `HomeView` (liste des championnats) et `ChampionshipView` (route
   `/championship/:id`, sélecteur de saison).
+- `src/types/api.generated.ts` : généré par `npm run api:types` depuis `openapi.json`
+  (copie du contrat du backend). Ne pas le modifier à la main ; les composants n'en dépendent
+  pas, il ne sert qu'à `src/types/__tests__/contrat.spec.ts`.
 - `src/types/index.ts` : types des réponses du backend. Elles reprennent la structure de
   football-data.org, réduite aux champs déclarés ici (records du paquet `model` côté
   backend) : un champ absent de ces types n'est pas renvoyé par le backend.
@@ -64,6 +68,11 @@ backend, sinon il n'arrive pas jusqu'au frontend. Les erreurs du backend sont de
 `ProblemDetail` (RFC 9457, `application/problem+json`) : `{"title", "status", "detail"}` ;
 une erreur de football-data.org garde son statut, pas son corps. Le frontend n'affiche
 jamais ce corps : chaque store a son propre message d'erreur.
+
+Le contrat est vérifié : la CI télécharge le `openapi.json` de `main` du backend
+(`npm run api:sync`), régénère `api.generated.ts`, et `contrat.spec.ts` échoue au type-check
+si une réponse du backend ne satisfait plus les types de `index.ts`. Quand le contrat change,
+merger d'abord la PR backend, puis relancer `npm run api:sync` et committer le résultat.
 
 ## Travailler à partir d'une issue
 

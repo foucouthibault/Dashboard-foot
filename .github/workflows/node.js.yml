@@ -27,6 +27,13 @@ jobs:
         node-version: 22.x
         cache: 'npm'
     - run: npm ci
+    # Contrat avec le backend : récupère le openapi.json de sa branche main et régénère les
+    # types. Un changement incompatible fait ensuite échouer le type-check (étape build).
+    - name: Récupère le contrat du backend
+      run: |
+        npm run api:sync
+        git diff --quiet -- openapi.json src/types/api.generated.ts \
+          || echo "::warning title=Contrat backend::openapi.json a changé côté backend : lancer npm run api:sync et committer le résultat"
     - run: npm run lint:check
     - run: npm run test:coverage
     - run: npm run build
