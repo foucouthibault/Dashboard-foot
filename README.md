@@ -74,10 +74,19 @@ Aucune variable d'environnement n'est nécessaire côté frontend en développem
 | `npm run test:e2e` | Tests end-to-end (Playwright) |
 | `npm run lint` | ESLint avec correction automatique |
 | `npm run format` | Formatage Prettier |
+| `npm run api:sync` | Récupère le contrat du backend (`openapi.json`) et régénère ses types |
+| `npm run api:types` | Régénère `src/types/api.generated.ts` à partir de `openapi.json` |
+
+## Contrat avec le backend
+
+Le backend publie son contrat en OpenAPI ([`openapi.json`](https://github.com/foucouthibault/Dashboard-foot-backend/blob/main/openapi.json), Swagger UI sur `/swagger-ui.html`). Une copie est versionnée ici, et `openapi-typescript` en tire `src/types/api.generated.ts`.
+
+Les composants utilisent toujours les types écrits à la main de `src/types/index.ts`. `src/types/__tests__/contrat.spec.ts` vérifie à la compilation que chaque réponse du backend satisfait ces types. En CI, le `openapi.json` de la branche `main` du backend est téléchargé avant le type-check : un champ retiré, renommé ou dont le type change côté backend fait échouer la CI du frontend. Un changement compatible passe, avec un avertissement invitant à lancer `npm run api:sync`.
 
 ## Tests
 
 - **Unitaires** (Vitest) : logique des stores Pinia (filtrage des classements, cache par saison, gestion des erreurs).
+- **Contrat** (`contrat.spec.ts`) : compatibilité des types avec `openapi.json`, vérifiée par `npm run type-check`.
 - **End-to-end** (Playwright) : parcours accueil → championnat et affichage des erreurs. L'API est simulée avec `page.route`, donc les tests ne dépendent ni du backend ni du quota.
 
 ```bash
@@ -98,7 +107,7 @@ src/
 ├── constants/      # Images de remplacement
 ├── router/         # Routes : accueil, championnat
 ├── stores/         # Stores Pinia avec cache et tests (__tests__)
-├── types/          # Types des réponses de l'API
+├── types/          # Types des réponses de l'API, et types générés depuis openapi.json
 └── views/          # Pages : accueil, championnat
 e2e/                # Tests Playwright
 ```

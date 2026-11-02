@@ -26,6 +26,11 @@ export default defineConfigWithVueTs(
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
+    rules: {
+      ...pluginVitest.configs.recommended.rules,
+      // expectTypeOf (contrat.spec.ts) est vérifié à la compilation, c'est aussi une assertion
+      'vitest/expect-expect': ['error', { assertFunctionNames: ['expect', 'expectTypeOf'] }],
+    },
   },
   
   {
