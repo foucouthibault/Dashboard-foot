@@ -1,0 +1,27 @@
+# Déploiement du frontend sur Netlify (offre gratuite). Netlify lit ce fichier à chaque build.
+
+[build]
+  # Type-check puis build de production, comme en CI.
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Backend déployé sur Render (Dashboard-foot-backend#33). Pas un secret : cette URL est de toute
+  # façon visible dans le code envoyé au navigateur. L'origine de ce site doit figurer dans
+  # APP_CORS_ALLOWED_ORIGINS côté backend, sinon le navigateur bloque les appels.
+  VITE_API_BASE_URL = "https://dashboard-foot-backend.onrender.com/api"
+
+# Le routeur est en createWebHistory : toute route inconnue du serveur (ex. /championship/2015
+# rechargée directement) sert index.html, et Vue Router affiche la bonne page. Les fichiers qui
+# existent (assets, favicon...) restent servis tels quels.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Les fichiers de /assets ont un hash dans leur nom : ils peuvent rester en cache indéfiniment.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

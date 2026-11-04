@@ -41,7 +41,10 @@ Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2
   football-data.org, réduite aux champs déclarés ici (records du paquet `model` côté
   backend) : un champ absent de ces types n'est pas renvoyé par le backend.
 - Routeur en `createWebHistory` : un hébergeur doit rediriger toutes les routes vers
-  `index.html`.
+  `index.html` (règle `/*` de `netlify.toml`).
+- Déployé sur Netlify (https://dashboard-foot-frontend.netlify.app) depuis `netlify.toml`, qui fixe
+  `VITE_API_BASE_URL` sur le backend Render. Une nouvelle origine (domaine, aperçu de PR) doit
+  être ajoutée à `APP_CORS_ALLOWED_ORIGINS` côté backend.
 
 ## Invariants à ne pas casser
 
