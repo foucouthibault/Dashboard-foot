@@ -2,6 +2,8 @@
 
 Tableau de bord des grands championnats européens de football : classements, meilleurs buteurs et résultats de la dernière journée, présentés comme un album de vignettes.
 
+**▶ Démo : https://dashboard-foot.netlify.app** (le backend gratuit se met en veille : le premier chargement peut prendre jusqu'à 2 minutes)
+
 [![Node.js CI](https://github.com/foucouthibault/Dashboard-foot/actions/workflows/node.js.yml/badge.svg)](https://github.com/foucouthibault/Dashboard-foot/actions/workflows/node.js.yml)
 ![Vue 3](https://img.shields.io/badge/Vue-3.5-42b883?logo=vue.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6?logo=typescript)
@@ -76,6 +78,17 @@ Aucune variable d'environnement n'est nécessaire côté frontend en développem
 | `npm run format` | Formatage Prettier |
 | `npm run api:sync` | Récupère le contrat du backend (`openapi.json`) et régénère ses types |
 | `npm run api:types` | Régénère `src/types/api.generated.ts` à partir de `openapi.json` |
+
+## Déploiement
+
+Le frontend est en ligne sur **https://dashboard-foot.netlify.app** et appelle le backend déployé sur Render (https://dashboard-foot-backend.onrender.com).
+
+- **Hébergeur : [Netlify](https://www.netlify.com), offre gratuite.** Choisi plutôt que Vercel parce que toute la configuration (build, variable d'API, redirection des routes, en-têtes) tient dans un fichier versionné, [`netlify.toml`](./netlify.toml), sans réglage à refaire dans l'interface.
+- **Build :** `npm run build` (type-check + build), publié depuis `dist/`, sous Node 22.
+- **API :** `VITE_API_BASE_URL` vaut `https://dashboard-foot-backend.onrender.com/api`. Elle est lue au build et n'a rien de secret (elle est visible dans le code envoyé au navigateur).
+- **Routes :** le routeur est en `createWebHistory`. Une redirection `/* → /index.html` (statut `200`) permet de recharger directement `/championship/2015` sans 404 ; les fichiers existants restent servis tels quels.
+- **CORS :** l'origine `https://dashboard-foot.netlify.app` doit figurer dans la variable `APP_CORS_ALLOWED_ORIGINS` du backend sur Render. Les aperçus de PR de Netlify ont une autre origine (`deploy-preview-<n>--...`) : leurs appels API sont bloqués tant qu'elle n'est pas ajoutée.
+- **Redéployer :** automatique à chaque commit sur `main`. À la main : *Deploys → Trigger deploy* dans le tableau de bord Netlify.
 
 ## Contrat avec le backend
 
