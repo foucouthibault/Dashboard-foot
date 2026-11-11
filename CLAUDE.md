@@ -29,6 +29,10 @@ Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2
 - `src/stores/` : un store Pinia par type de donnée (`competitions`, `standings`,
   `matches`, `scorers`). Les stores gèrent le chargement, les erreurs et leur propre
   cache, indexé par clé (compétition, saison et, pour les buteurs, `limit`).
+- `src/stores/serverStatus.ts` + `src/api/serverStatus.ts` : intercepteurs d'`apiClient`
+  (branchés dans `main.ts`) qui signalent un appel de plus de 4 s (réveil du backend en veille)
+  et un `429` (`Retry-After`, 60 s par défaut s'il est illisible) ; `ServerStatusBanner`, dans
+  `App.vue`, affiche le message. Ils ne relancent aucun appel.
 - `src/composables/useLeagueData.ts` : apparence par ligue (nom, icône, couleurs). Prend
   un getter (`() => props.competition`) pour rester réactif lors d'une navigation sans
   remontage du composant.

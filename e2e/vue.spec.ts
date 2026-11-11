@@ -226,3 +226,47 @@ test("l'onglet buteurs suit la saison choisie et le nombre de buteurs demandé",
     { season: '2025', limit: '5' },
   ])
 })
+
+// ── Réveil du backend et quota atteint ──────────────────────────────────────
+
+test('un appel lent affiche le message de réveil, qui disparaît à la réponse', async ({ page }) => {
+  // Horloge simulée : le délai d'apparition du message passe sans attendre réellement.
+  await page.clock.install()
+  // L'accueil charge plusieurs championnats : les appels restent en attente jusqu'à respond().
+  const pending: Route[] = []
+  await page.route('**/api/competitions/**', (route) => {
+    pending.push(route)
+  })
+  const respond = () =>
+    Promise.all(
+      pending.splice(0).map((route) => {
+        const id = new URL(route.request().url()).pathname.split('/')[3]
+        return json(route, COMPETITIONS[id] ?? COMPETITIONS.FL1)
+      }),
+    )
+  await page.goto('/')
+
+  const status = page.getByRole('status')
+  await expect(status).toHaveText('')
+
+  await page.clock.runFor(5000)
+  await expect(status).toContainText('Le serveur se réveille')
+
+  await respond()
+  await expect(status).toHaveText('')
+})
+
+test('un 429 du backend affiche le délai de Retry-After', async ({ page }) => {
+  await page.route('**/api/competitions/**', (route) =>
+    route.fulfill({
+      status: 429,
+      contentType: 'application/problem+json',
+      headers: { 'Retry-After': '42' },
+      body: JSON.stringify({ title: 'Too Many Requests', status: 429, detail: 'Quota atteint' }),
+    }),
+  )
+  await page.goto('/')
+
+  await expect(page.getByRole('status')).toContainText('Trop de demandes')
+  await expect(page.getByRole('status')).toContainText(/4[0-2] s/)
+})
