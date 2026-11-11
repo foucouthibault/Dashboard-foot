@@ -55,13 +55,14 @@ const selectedSeasonLabel = computed<string>(
 )
 
 const goHome = (): void => {
-  router.push({ name: 'home' })
+  void router.push({ name: 'home' })
 }
 
 const load = (): void => {
   // Charger les classements avec la saison sélectionnée
-  standingsStore.fetchStandings(championshipId.value, selectedSeason.value)
-  competitionsStore.fetchCompetitions()
+  // Les stores rattrapent leurs erreurs et les exposent via getError / error
+  void standingsStore.fetchStandings(championshipId.value, selectedSeason.value)
+  void competitionsStore.fetchCompetitions()
 }
 
 // ── L'étagère de tranches : navigation clavier du groupe de boutons radio ──

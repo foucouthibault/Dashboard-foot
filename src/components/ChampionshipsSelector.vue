@@ -10,7 +10,8 @@ const competitionsStore = useCompetitionsStore()
 onMounted(() => competitionsStore.fetchCompetitions())
 
 const selectChampionship = (id: string): void => {
-  router.push({ name: 'championship', params: { id } })
+  // Un échec de navigation est résolu, pas rejeté : rien à rattraper
+  void router.push({ name: 'championship', params: { id } })
 }
 </script>
 

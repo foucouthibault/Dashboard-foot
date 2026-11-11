@@ -22,6 +22,18 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+
+  {
+    // Une promesse doit être attendue, rattrapée ou marquée `void` (règle Sonar S9383).
+    // Demande les informations de types : seule cette règle les utilise.
+    name: 'app/promesses',
+    files: ['src/**/*.{ts,vue}'],
+    ignores: ['src/**/__tests__/**'],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: { '@typescript-eslint/no-floating-promises': 'error' },
+  },
   
   {
     ...pluginVitest.configs.recommended,
