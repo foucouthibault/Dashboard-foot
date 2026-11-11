@@ -105,6 +105,8 @@ merger d'abord la PR backend, puis relancer `npm run api:sync` et committer le r
 - Jamais de push sur `main` : une branche (`feat/…`, `fix/…`, `chore/…`, `docs/…`) et une PR.
 - Prettier : sans point-virgule, guillemets simples, 100 colonnes ; indentation 2 espaces.
 - Composition API avec `<script setup lang="ts">` ; imports via l'alias `@/`.
+- Une promesse est attendue (`await`), rattrapée (`.catch`) ou marquée `void` quand son erreur
+  est déjà gérée (stores, `router.push`) : ESLint (`no-floating-promises`) bloque sinon.
 - Tests unitaires dans `__tests__/*.spec.ts` à côté du code testé ; tests E2E dans `e2e/`.
 - Accessibilité : les contrôles interactifs (ex. sélecteur de saison) ont un rôle ARIA,
   un `aria-label` et sont utilisables au clavier.
