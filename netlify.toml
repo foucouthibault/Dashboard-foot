@@ -11,6 +11,10 @@
   # façon visible dans le code envoyé au navigateur. L'origine de ce site doit figurer dans
   # APP_CORS_ALLOWED_ORIGINS côté backend, sinon le navigateur bloque les appels.
   VITE_API_BASE_URL = "https://dashboard-foot-backend.onrender.com/api"
+  # DSN Sentry du frontend (#136). Pas un secret : il est lui aussi visible dans le code envoyé au
+  # navigateur. Vide ailleurs (développement, CI, tests) : Sentry est alors désactivé.
+  # L'environnement et la version viennent de CONTEXT et COMMIT_REF, fournis par Netlify.
+  VITE_SENTRY_DSN = "https://edbd6fbdd2f53edc32d7097c5b525e24@o4512420643930112.ingest.de.sentry.io/4512420792041552"
 
 # Le routeur est en createWebHistory : toute route inconnue du serveur (ex. /championship/2015
 # rechargée directement) sert index.html, et Vue Router affiche la bonne page. Les fichiers qui
