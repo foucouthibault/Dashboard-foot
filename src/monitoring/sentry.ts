@@ -12,7 +12,9 @@ const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\
  * compare l'URL complète, ou son chemin pour un appel de même origine (`/api` en développement).
  */
 export function backendTraceTarget(apiBaseUrl: string): RegExp {
-  return new RegExp(`^${escapeRegExp(apiBaseUrl.replace(/\/+$/, ''))}(/|$)`)
+  let base = apiBaseUrl
+  while (base.endsWith('/')) base = base.slice(0, -1)
+  return new RegExp(`^${escapeRegExp(base)}(/|$)`)
 }
 
 interface SentryOptions {
