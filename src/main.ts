@@ -10,9 +10,11 @@ import './assets/album.css'
 
 const app = createApp(App)
 
-// Désactivé sans VITE_SENTRY_DSN (développement, CI, tests)
+// Désactivé sans VITE_SENTRY_DSN (développement, CI, tests) et sur les adresses de déploiement
+// Netlify, que le CORS du backend refuse
 initSentry(app, router, apiClient, {
   dsn: import.meta.env.VITE_SENTRY_DSN,
+  hostname: window.location.hostname,
   apiBaseUrl: API_BASE_URL,
   environment: import.meta.env.VITE_SENTRY_ENVIRONMENT,
   release: import.meta.env.VITE_SENTRY_RELEASE,

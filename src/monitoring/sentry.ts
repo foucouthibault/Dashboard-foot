@@ -17,25 +17,37 @@ export function backendTraceTarget(apiBaseUrl: string): RegExp {
   return new RegExp(`^${escapeRegExp(base)}(/|$)`)
 }
 
+/**
+ * Adresse propre à un déploiement Netlify (`<id>--site.netlify.app`, `deploy-preview-<n>--…`),
+ * qui sert les mêmes fichiers que le site. Son origine n'est pas autorisée par le CORS du
+ * backend : tous les appels y échouent en « Network Error » (le navigateur masque le `403`).
+ * Le robot de Netlify en charge une à chaque déploiement : on n'y active pas Sentry.
+ */
+export function isNetlifyDeployHost(hostname: string): boolean {
+  return hostname.endsWith('.netlify.app') && hostname.includes('--')
+}
+
 interface SentryOptions {
   dsn: string | undefined
+  /** Nom d'hôte de la page (`window.location.hostname`). */
+  hostname: string
   apiBaseUrl: string
   environment: string
   release: string | undefined
 }
 
 /**
- * Initialise Sentry si un DSN est fourni. Sans DSN (développement, CI, tests), rien n'est
- * initialisé et rien n'est envoyé. Vie privée : ni adresse IP (`dataCollection.userInfo: false`),
+ * Initialise Sentry si un DSN est fourni. Sans DSN (développement, CI, tests), ou sur une adresse
+ * de déploiement Netlify (voir `isNetlifyDeployHost`), rien n'est initialisé et rien n'est envoyé. Vie privée : ni adresse IP (`dataCollection.userInfo: false`),
  * ni session replay, ni cookie.
  */
 export function initSentry(
   app: App,
   router: Router,
   client: AxiosInstance,
-  { dsn, apiBaseUrl, environment, release }: SentryOptions,
+  { dsn, hostname, apiBaseUrl, environment, release }: SentryOptions,
 ): boolean {
-  if (!dsn) return false
+  if (!dsn || isNetlifyDeployHost(hostname)) return false
 
   Sentry.init({
     app,
