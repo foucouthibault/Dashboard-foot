@@ -86,6 +86,8 @@ test('la page d’accueil liste les championnats', async ({ page }) => {
   await mockApi(page)
   await page.goto('/')
 
+  await expect(page).toHaveTitle('Dashboard Foot')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
   await expect(page.locator('h1')).toHaveText('Foot')
   for (const { name } of Object.values(COMPETITIONS)) {
     await expect(page.getByRole('button', { name })).toBeVisible()
