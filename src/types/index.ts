@@ -81,4 +81,3 @@ export interface Scorer {
 export interface ScorersResponse {
   scorers: Scorer[]
 }
-

@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Rejoue l'animation de pose des vignettes quand le jeu de lignes change
 // (ex : changement de saison), sans reconstruire tout le composant.
-const rowsKey = computed(() => props.rows.map(row => row.team.id).join('-'))
+const rowsKey = computed(() => props.rows.map((row) => row.team.id).join('-'))
 </script>
 
 <template>
@@ -60,12 +60,7 @@ const rowsKey = computed(() => props.rows.map(row => row.team.id).join('-'))
           <td class="col-equipe">
             <div class="equipe">
               <span class="ecusson">
-                <img
-                  :src="row.team.crest || PLACEHOLDER_CREST"
-                  alt=""
-                  width="24"
-                  height="24"
-                />
+                <img :src="row.team.crest || PLACEHOLDER_CREST" alt="" width="24" height="24" />
               </span>
               <span class="equipe-nom">{{ row.team.name }}</span>
             </div>
@@ -75,10 +70,8 @@ const rowsKey = computed(() => props.rows.map(row => row.team.id).join('-'))
 
           <td class="col-bilan chiffre">
             <span class="bilan-v">{{ row.won }}</span
-            ><span class="bilan-sep">·</span
-            ><span class="bilan-n">{{ row.draw }}</span
-            ><span class="bilan-sep">·</span
-            ><span class="bilan-d">{{ row.lost }}</span>
+            ><span class="bilan-sep">·</span><span class="bilan-n">{{ row.draw }}</span
+            ><span class="bilan-sep">·</span><span class="bilan-d">{{ row.lost }}</span>
           </td>
 
           <td

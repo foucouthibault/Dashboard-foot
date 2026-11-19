@@ -71,7 +71,9 @@ const selectChampionship = (id: string): void => {
   cursor: pointer;
   font: inherit;
   color: inherit;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .vignette-ref {
@@ -117,7 +119,9 @@ const selectChampionship = (id: string): void => {
 .vignette:hover,
 .vignette:focus-visible {
   transform: translateY(-3px);
-  box-shadow: inset 0 0 0 2px var(--encre), var(--ombre-vignette);
+  box-shadow:
+    inset 0 0 0 2px var(--encre),
+    var(--ombre-vignette);
 }
 
 .vignette:hover .vignette-image,

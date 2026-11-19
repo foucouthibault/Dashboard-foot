@@ -66,18 +66,18 @@ Aucune variable d'environnement n'est nécessaire côté frontend en développem
 
 ## Commandes
 
-| Commande | Description |
-|----------|-------------|
-| `npm run dev` | Serveur de développement |
-| `npm run build` | Vérification des types + build de production |
-| `npm run preview` | Sert le build de production en local |
-| `npm test` | Tests unitaires (une passe) |
-| `npm run test:unit` | Tests unitaires en mode watch |
-| `npm run test:e2e` | Tests end-to-end (Playwright) |
-| `npm run lint` | ESLint avec correction automatique |
-| `npm run format` | Formatage Prettier |
-| `npm run api:sync` | Récupère le contrat du backend (`openapi.json`) et régénère ses types |
-| `npm run api:types` | Régénère `src/types/api.generated.ts` à partir de `openapi.json` |
+| Commande            | Description                                                           |
+| ------------------- | --------------------------------------------------------------------- |
+| `npm run dev`       | Serveur de développement                                              |
+| `npm run build`     | Vérification des types + build de production                          |
+| `npm run preview`   | Sert le build de production en local                                  |
+| `npm test`          | Tests unitaires (une passe)                                           |
+| `npm run test:unit` | Tests unitaires en mode watch                                         |
+| `npm run test:e2e`  | Tests end-to-end (Playwright)                                         |
+| `npm run lint`      | ESLint avec correction automatique                                    |
+| `npm run format`    | Formatage Prettier                                                    |
+| `npm run api:sync`  | Récupère le contrat du backend (`openapi.json`) et régénère ses types |
+| `npm run api:types` | Régénère `src/types/api.generated.ts` à partir de `openapi.json`      |
 
 ## Déploiement
 
@@ -93,7 +93,7 @@ Le frontend est en ligne sur **https://dashboard-foot-frontend.netlify.app** et 
   - **Suivi des appels :** les en-têtes `sentry-trace` et `baggage` ne partent que vers l'URL du backend (`tracePropagationTargets`), qui les autorise dans sa configuration CORS. Une erreur du frontend est ainsi reliée à la requête du backend.
   - **Vie privée :** ni adresse IP (`dataCollection.userInfo: false`), ni cookie, ni en-tête, ni session replay. Aucune donnée personnelle n'étant collectée, aucune bannière de consentement n'est nécessaire.
   - **Sourcemaps :** non générées au build (réglage par défaut de Vite) : aucun `.map` n'est publié, et les piles d'appels dans Sentry restent minifiées.
-- **Redéployer :** automatique à chaque commit sur `main`. À la main : *Deploys → Trigger deploy* dans le tableau de bord Netlify.
+- **Redéployer :** automatique à chaque commit sur `main`. À la main : _Deploys → Trigger deploy_ dans le tableau de bord Netlify.
 
 ## Contrat avec le backend
 

@@ -62,18 +62,13 @@ export const useMatchesStore = defineStore('matches', () => {
     }
   }
 
-  const getMatches = (competitionId: string): Match[] =>
-    cache.value[competitionId]?.matches ?? []
+  const getMatches = (competitionId: string): Match[] => cache.value[competitionId]?.matches ?? []
 
-  const getMatchday = (competitionId: string): number =>
-    cache.value[competitionId]?.matchday ?? 0
+  const getMatchday = (competitionId: string): number => cache.value[competitionId]?.matchday ?? 0
 
-  const isLoading = (competitionId: string): boolean =>
-    loading.value[competitionId] ?? false
+  const isLoading = (competitionId: string): boolean => loading.value[competitionId] ?? false
 
-  const getError = (competitionId: string): string | null =>
-    error.value[competitionId] ?? null
+  const getError = (competitionId: string): string | null => error.value[competitionId] ?? null
 
   return { fetchMatches, getMatches, getMatchday, isLoading, getError }
 })
-

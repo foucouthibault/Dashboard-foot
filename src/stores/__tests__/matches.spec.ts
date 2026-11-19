@@ -140,7 +140,7 @@ describe('useMatchesStore', () => {
     expect(store.getMatchday('FL1')).toBe(3)
   })
 
-  it("renvoie des valeurs par défaut pour une compétition jamais chargée", () => {
+  it('renvoie des valeurs par défaut pour une compétition jamais chargée', () => {
     const store = useMatchesStore()
 
     expect(store.getMatches('FL1')).toEqual([])

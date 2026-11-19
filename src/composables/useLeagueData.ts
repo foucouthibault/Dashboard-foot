@@ -10,35 +10,35 @@ type LeagueId = KnownLeagueId | 'default'
 const LEAGUE_MAPPINGS: Record<string, KnownLeagueId> = {
   // Ligue 1
   '2015': 'Ligue1',
-  'FL1': 'Ligue1',
+  FL1: 'Ligue1',
   'Ligue 1': 'Ligue1',
-  'Ligue1': 'Ligue1',
+  Ligue1: 'Ligue1',
   // Premier League
   '2021': 'PremierLeague',
-  'PL': 'PremierLeague',
+  PL: 'PremierLeague',
   'Premier League': 'PremierLeague',
-  'PremierLeague': 'PremierLeague',
+  PremierLeague: 'PremierLeague',
   // Liga
   '2014': 'Liga',
-  'PD': 'Liga',
+  PD: 'Liga',
   'La Liga': 'Liga',
-  'Liga': 'Liga',
+  Liga: 'Liga',
   // Bundesliga
   '2002': 'Bundesliga',
-  'BL1': 'Bundesliga',
-  'Bundesliga': 'Bundesliga',
+  BL1: 'Bundesliga',
+  Bundesliga: 'Bundesliga',
   // Serie A
   '2019': 'SerieA',
-  'SA': 'SerieA',
+  SA: 'SerieA',
   'Serie A': 'SerieA',
-  'SerieA': 'SerieA',
+  SerieA: 'SerieA',
   // Ligue 2
   '2016': 'Ligue2',
-  'FL2': 'Ligue2',
+  FL2: 'Ligue2',
   'Ligue 2': 'Ligue2',
   // Coupe du monde
   '2000': 'WorldCup',
-  'WC': 'WorldCup',
+  WC: 'WorldCup',
   'FIFA World Cup': 'WorldCup',
 }
 

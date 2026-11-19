@@ -29,7 +29,7 @@ describe('getAllChampionships', () => {
     expect(result.map((c) => c.id)).toEqual(CHAMPIONSHIP_IDS)
   })
 
-  it("échoue entièrement si un seul des appels échoue (Promise.all)", async () => {
+  it('échoue entièrement si un seul des appels échoue (Promise.all)', async () => {
     mockedGet.mockImplementation((url: string) =>
       url.endsWith('/SA')
         ? Promise.reject(new Error('429'))

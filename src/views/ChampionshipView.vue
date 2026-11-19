@@ -19,7 +19,7 @@ const activeTab = ref<'standings' | 'scorers'>('standings')
 
 // Récupère la compétition complète
 const competition = computed(() => {
-  return competitionsStore.competitions.find(c => String(c.id) === championshipId.value)
+  return competitionsStore.competitions.find((c) => String(c.id) === championshipId.value)
 })
 
 // Paramètres pour les requêtes
@@ -51,7 +51,7 @@ const availableSeasons = ref<SeasonOption[]>([
 const selectedSeason = ref<string>(availableSeasons.value[0].value)
 
 const selectedSeasonLabel = computed<string>(
-  () => availableSeasons.value.find(s => s.value === selectedSeason.value)?.label ?? '',
+  () => availableSeasons.value.find((s) => s.value === selectedSeason.value)?.label ?? '',
 )
 
 const goHome = (): void => {
@@ -131,7 +131,7 @@ watch([championshipId, selectedSeason], load, { immediate: true })
               <button
                 v-for="(season, index) in availableSeasons"
                 :key="season.value"
-                :ref="el => setSpineRef(el, index)"
+                :ref="(el) => setSpineRef(el, index)"
                 type="button"
                 role="radio"
                 class="tranche"
@@ -275,7 +275,9 @@ watch([championshipId, selectedSeason], load, { immediate: true })
   color: var(--papier);
   cursor: pointer;
   box-shadow: var(--ombre-vignette);
-  transition: transform 0.28s cubic-bezier(0.3, 1.3, 0.5, 1), background-color 0.2s ease;
+  transition:
+    transform 0.28s cubic-bezier(0.3, 1.3, 0.5, 1),
+    background-color 0.2s ease;
 }
 
 /* Le liseré haut : la coiffe de l'album */
@@ -305,7 +307,9 @@ watch([championshipId, selectedSeason], load, { immediate: true })
   background-color: var(--rouge);
   transform: translateY(-14px);
   height: 104px;
-  box-shadow: 0 3px 0 rgba(21, 28, 59, 0.25), 0 14px 22px -12px rgba(21, 28, 59, 0.7);
+  box-shadow:
+    0 3px 0 rgba(21, 28, 59, 0.25),
+    0 14px 22px -12px rgba(21, 28, 59, 0.7);
 }
 
 .tranche-active:hover {
@@ -335,7 +339,9 @@ watch([championshipId, selectedSeason], load, { immediate: true })
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .onglet:hover {
