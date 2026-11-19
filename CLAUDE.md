@@ -111,7 +111,8 @@ merger d'abord la PR backend, puis relancer `npm run api:sync` et committer le r
 - Jamais de push sur `main` : une branche (`feat/…`, `fix/…`, `chore/…`, `docs/…`) et une PR.
 - Prettier : sans point-virgule, guillemets simples, 100 colonnes ; indentation 2 espaces.
   Vérifié en CI (`format:check`). Un commit de reformatage seul s'ajoute à
-  `.git-blame-ignore-revs` (SHA conservé tant que les PR sont fusionnées par un commit de merge).
+  `.git-blame-ignore-revs`, avec le SHA qu'il a sur `main` : une PR fusionnée par « Rebase and
+  merge » ou « Squash and merge » change ce SHA, il faut alors corriger le fichier après le merge.
 - Composition API avec `<script setup lang="ts">` ; imports via l'alias `@/`.
 - Une promesse est attendue (`await`), rattrapée (`.catch`) ou marquée `void` quand son erreur
   est déjà gérée (stores, `router.push`) : ESLint (`no-floating-promises`) bloque sinon.
