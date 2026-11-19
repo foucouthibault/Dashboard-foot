@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useServerStatusStore } from '@/stores/serverStatus'
+import { formatAge, useServerStatusStore } from '@/stores/serverStatus'
 
 // Réveil mesuré : environ 1 min 40 s (README du backend, section déploiement).
 const WAKE_UP_MESSAGE =
@@ -12,13 +12,21 @@ const message = computed(() => {
   if (status.isRateLimited) {
     return `Trop de demandes en ce moment : les données seront de nouveau disponibles dans ${status.retryAfterSeconds} s. Rechargez la page passé ce délai.`
   }
-  return status.isWakingUp ? WAKE_UP_MESSAGE : null
+  if (status.isWakingUp) return WAKE_UP_MESSAGE
+  if (status.staleAgeSeconds !== null) {
+    return `Le service de données est momentanément indisponible : les informations affichées datent d'il y a ${formatAge(status.staleAgeSeconds)}.`
+  }
+  return null
 })
 </script>
 
 <template>
   <div class="statut-serveur" role="status" aria-live="polite">
-    <p v-if="message" class="statut-message" :class="{ quota: status.isRateLimited }">
+    <p
+      v-if="message"
+      class="statut-message"
+      :class="{ quota: status.isRateLimited, ancien: !status.isRateLimited && !status.isWakingUp }"
+    >
       {{ message }}
     </p>
   </div>
@@ -44,5 +52,11 @@ const message = computed(() => {
 
 .statut-message.quota {
   background: var(--rouge);
+}
+
+.statut-message.ancien {
+  background: var(--papier);
+  color: var(--encre);
+  border-bottom: 2px solid var(--encre);
 }
 </style>

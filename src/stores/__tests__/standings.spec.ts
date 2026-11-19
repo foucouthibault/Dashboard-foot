@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useStandingsStore } from '@/stores/standings'
 import { getCompetitionStandings } from '@/api/standings'
+import { markStaleData } from '@/api/serverStatus'
+import { STALE_DATA_TTL_MS } from '@/stores/serverStatus'
 import type { StandingGroup, StandingRow } from '@/types'
 
 vi.mock('@/api/standings', () => ({
@@ -79,5 +81,45 @@ describe('useStandingsStore', () => {
     expect(store.getError('FL1')).toBe('Impossible de charger le classement')
     expect(store.isLoading('FL1')).toBe(false)
     expect(store.getRows('FL1')).toEqual([])
+  })
+
+  describe('donnée servie par la copie de secours du backend', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('ne la garde que peu de temps, pour redemander la donnée fraîche', async () => {
+      const stale = { standings: [group('TOTAL', [row(1, 1)])] }
+      markStaleData(stale)
+      mockedGet
+        .mockResolvedValueOnce(stale)
+        .mockResolvedValue({ standings: [group('TOTAL', [row(1, 2)])] })
+      const store = useStandingsStore()
+
+      await store.fetchStandings('FL1')
+      vi.advanceTimersByTime(STALE_DATA_TTL_MS - 1)
+      await store.fetchStandings('FL1')
+      expect(mockedGet).toHaveBeenCalledTimes(1)
+
+      vi.advanceTimersByTime(2)
+      await store.fetchStandings('FL1')
+      expect(mockedGet).toHaveBeenCalledTimes(2)
+      expect(store.getRows('FL1').map((r) => r.team.id)).toEqual([2])
+    })
+
+    it('garde une donnée fraîche toute la durée habituelle', async () => {
+      mockedGet.mockResolvedValue({ standings: [group('TOTAL', [row(1, 1)])] })
+      const store = useStandingsStore()
+
+      await store.fetchStandings('FL1')
+      vi.advanceTimersByTime(STALE_DATA_TTL_MS * 2)
+      await store.fetchStandings('FL1')
+
+      expect(mockedGet).toHaveBeenCalledTimes(1)
+    })
   })
 })

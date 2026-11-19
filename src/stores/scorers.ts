@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { cacheTtlFor } from '@/api/serverStatus'
 import { ref } from 'vue'
 import { getCompetitionScorers } from '@/api/scorers'
 import type { Scorer } from '@/types'
@@ -8,6 +9,8 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 interface CacheEntry {
   scorers: Scorer[]
   fetchedAt: number
+  // Courte si la donnée vient de la copie de secours du backend (cacheTtlFor)
+  ttl: number
 }
 
 export const useScorersStore = defineStore('scorers', () => {
@@ -24,7 +27,7 @@ export const useScorersStore = defineStore('scorers', () => {
     const key = getCacheKey(competitionId, limit, season)
     const entry = cache.value[key]
     if (!entry) return true
-    return Date.now() - entry.fetchedAt > CACHE_TTL
+    return Date.now() - entry.fetchedAt > entry.ttl
   }
 
   const fetchScorers = async (
@@ -43,6 +46,7 @@ export const useScorersStore = defineStore('scorers', () => {
       cache.value[cacheKey] = {
         scorers: data.scorers ?? [],
         fetchedAt: Date.now(),
+        ttl: cacheTtlFor(data, CACHE_TTL),
       }
     } catch (err) {
       console.error('Erreur scorers', err)

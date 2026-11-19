@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import {
+  formatAge,
   useServerStatusStore,
   SLOW_REQUEST_DELAY_MS,
   DEFAULT_RETRY_AFTER_SECONDS,
@@ -84,5 +85,31 @@ describe('useServerStatusStore', () => {
     store.rateLimited(5)
 
     expect(store.retryAfterSeconds).toBe(30)
+  })
+
+  it("garde l'âge le plus élevé des données anciennes, et l'oublie quand elles sont rafraîchies", () => {
+    const store = useServerStatusStore()
+
+    store.staleResponse('/competitions/FL1/standings?{}', 120)
+    store.staleResponse('/competitions/FL1/matches?{}', 900)
+    expect(store.staleAgeSeconds).toBe(900)
+
+    store.freshResponse('/competitions/FL1/matches?{}')
+    expect(store.staleAgeSeconds).toBe(120)
+
+    store.freshResponse('/competitions/FL1/standings?{}')
+    expect(store.isServingStaleData).toBe(false)
+    expect(store.staleAgeSeconds).toBeNull()
+  })
+})
+
+describe('formatAge', () => {
+  it('donne un âge lisible, de la minute au jour', () => {
+    expect(formatAge(30)).toBe("moins d'une minute")
+    expect(formatAge(60)).toBe('1 min')
+    expect(formatAge(59 * 60 + 59)).toBe('59 min')
+    expect(formatAge(2 * 3600 + 1200)).toBe('2 h')
+    expect(formatAge(24 * 3600)).toBe('1 jour')
+    expect(formatAge(3 * 24 * 3600 + 5)).toBe('3 jours')
   })
 })
