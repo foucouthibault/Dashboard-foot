@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { cacheTtlFor } from '@/api/serverStatus'
 import { ref } from 'vue'
 import { getCompetitionMatches } from '@/api/matches'
 import type { Match } from '@/types'
@@ -9,6 +10,8 @@ interface CacheEntry {
   matches: Match[]
   matchday: number
   fetchedAt: number
+  // Courte si la donnée vient de la copie de secours du backend (cacheTtlFor)
+  ttl: number
 }
 
 export const useMatchesStore = defineStore('matches', () => {
@@ -19,7 +22,7 @@ export const useMatchesStore = defineStore('matches', () => {
   const isStale = (competitionId: string): boolean => {
     const entry = cache.value[competitionId]
     if (!entry) return true
-    return Date.now() - entry.fetchedAt > CACHE_TTL
+    return Date.now() - entry.fetchedAt > entry.ttl
   }
 
   const fetchMatches = async (competitionId: string): Promise<void> => {
@@ -35,7 +38,12 @@ export const useMatchesStore = defineStore('matches', () => {
 
       if (finished.length === 0) {
         error.value[competitionId] = 'Aucun match terminé disponible'
-        cache.value[competitionId] = { matches: [], matchday: 0, fetchedAt: Date.now() }
+        cache.value[competitionId] = {
+          matches: [],
+          matchday: 0,
+          fetchedAt: Date.now(),
+          ttl: cacheTtlFor(data, CACHE_TTL),
+        }
         return
       }
 
@@ -44,6 +52,7 @@ export const useMatchesStore = defineStore('matches', () => {
         matches: finished.filter((m: Match) => m.matchday === maxMatchday),
         matchday: maxMatchday,
         fetchedAt: Date.now(),
+        ttl: cacheTtlFor(data, CACHE_TTL),
       }
     } catch (err) {
       console.error('Erreur matches', err)

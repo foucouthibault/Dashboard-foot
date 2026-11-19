@@ -2,11 +2,19 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import axios, { AxiosError, AxiosHeaders } from 'axios'
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { parseRetryAfter, trackServerStatus } from '@/api/serverStatus'
+import {
+  cacheTtlFor,
+  isStaleData,
+  markStaleData,
+  parseAge,
+  parseRetryAfter,
+  trackServerStatus,
+} from '@/api/serverStatus'
 import {
   useServerStatusStore,
   SLOW_REQUEST_DELAY_MS,
   DEFAULT_RETRY_AFTER_SECONDS,
+  STALE_DATA_TTL_MS,
 } from '@/stores/serverStatus'
 
 // Aucun appel réseau : l'adaptateur axios est remplacé par une réponse simulée.
@@ -17,7 +25,7 @@ const response = (
   status: number,
   headers: Record<string, string> = {},
 ): AxiosResponse => ({
-  data: {},
+  data: { standings: [] },
   status,
   statusText: '',
   headers: new AxiosHeaders(headers),
@@ -99,6 +107,90 @@ describe('trackServerStatus', () => {
     await expect(client.get('/competitions/FL1/standings')).rejects.toBeInstanceOf(AxiosError)
 
     expect(store.retryAfterSeconds).toBe(DEFAULT_RETRY_AFTER_SECONDS)
+  })
+})
+
+describe('trackServerStatus et la copie de secours du backend (en-tête Age)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  const answering =
+    (...ages: (string | undefined)[]): Adapter =>
+    (config) => {
+      const age = ages.shift()
+      return Promise.resolve(response(config, 200, age === undefined ? {} : { Age: age }))
+    }
+
+  it("signale l'âge d'une donnée servie par la copie de secours et la marque comme ancienne", async () => {
+    const client = clientWith(answering('7200'))
+    const store = useServerStatusStore()
+
+    const { data } = await client.get('/competitions/FL1/standings')
+
+    expect(store.isServingStaleData).toBe(true)
+    expect(store.staleAgeSeconds).toBe(7200)
+    expect(isStaleData(data)).toBe(true)
+  })
+
+  it('ne signale rien pour une réponse sans Age, ou avec un Age illisible ou nul', async () => {
+    const client = clientWith(answering(undefined, 'hier', '0'))
+    const store = useServerStatusStore()
+
+    const responses = [
+      await client.get('/competitions/FL1'),
+      await client.get('/competitions/PL'),
+      await client.get('/competitions/SA'),
+    ]
+
+    expect(store.isServingStaleData).toBe(false)
+    expect(responses.some(({ data }) => isStaleData(data))).toBe(false)
+  })
+
+  it('une réponse fraîche pour la même donnée efface le signalement', async () => {
+    const client = clientWith(answering('600', undefined))
+    const store = useServerStatusStore()
+
+    await client.get('/competitions/FL1/standings', { params: { season: '2024' } })
+    expect(store.staleAgeSeconds).toBe(600)
+
+    await client.get('/competitions/FL1/standings', { params: { season: '2024' } })
+    expect(store.isServingStaleData).toBe(false)
+  })
+
+  it("une réponse fraîche pour une autre donnée n'efface pas le signalement", async () => {
+    const client = clientWith(answering('600', undefined))
+    const store = useServerStatusStore()
+
+    await client.get('/competitions/FL1/standings', { params: { season: '2024' } })
+    await client.get('/competitions/FL1/standings', { params: { season: '2023' } })
+
+    expect(store.staleAgeSeconds).toBe(600)
+  })
+})
+
+describe('parseAge', () => {
+  it('lit un nombre de secondes', () => {
+    expect(parseAge('90')).toBe(90)
+    expect(parseAge(3600)).toBe(3600)
+  })
+
+  it('ignore une valeur absente, nulle ou non numérique', () => {
+    expect(parseAge(undefined)).toBeNull()
+    expect(parseAge('0')).toBeNull()
+    expect(parseAge('-5')).toBeNull()
+    expect(parseAge('une heure')).toBeNull()
+  })
+})
+
+describe('cacheTtlFor', () => {
+  it('raccourcit la durée de cache d’une donnée ancienne seulement', () => {
+    const fresh = { scorers: [] }
+    const stale = { scorers: [] }
+    markStaleData(stale)
+
+    expect(cacheTtlFor(fresh, 5 * 60 * 1000)).toBe(5 * 60 * 1000)
+    expect(cacheTtlFor(stale, 5 * 60 * 1000)).toBe(STALE_DATA_TTL_MS)
   })
 })
 

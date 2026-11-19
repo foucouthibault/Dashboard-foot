@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { cacheTtlFor } from '@/api/serverStatus'
 import { ref } from 'vue'
 import { getCompetitionStandings } from '@/api/standings'
 import type { StandingRow } from '@/types'
@@ -8,6 +9,8 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 interface CacheEntry {
   rows: StandingRow[]
   fetchedAt: number
+  // Courte si la donnée vient de la copie de secours du backend (cacheTtlFor)
+  ttl: number
 }
 
 export const useStandingsStore = defineStore('standings', () => {
@@ -24,7 +27,7 @@ export const useStandingsStore = defineStore('standings', () => {
     const key = getCacheKey(competitionId, season)
     const entry = cache.value[key]
     if (!entry) return true
-    return Date.now() - entry.fetchedAt > CACHE_TTL
+    return Date.now() - entry.fetchedAt > entry.ttl
   }
 
   const fetchStandings = async (competitionId: string, season?: string): Promise<void> => {
@@ -49,6 +52,7 @@ export const useStandingsStore = defineStore('standings', () => {
       cache.value[cacheKey] = {
         rows: allRows,
         fetchedAt: Date.now(),
+        ttl: cacheTtlFor(data, CACHE_TTL),
       }
     } catch (err) {
       console.error('Erreur standings', err)
@@ -75,4 +79,3 @@ export const useStandingsStore = defineStore('standings', () => {
 
   return { fetchStandings, getRows, isLoading, getError }
 })
-

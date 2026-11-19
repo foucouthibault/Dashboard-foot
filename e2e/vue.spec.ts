@@ -272,3 +272,20 @@ test('un 429 du backend affiche le délai de Retry-After', async ({ page }) => {
   await expect(page.getByRole('status')).toContainText('Trop de demandes')
   await expect(page.getByRole('status')).toContainText(/4[0-2] s/)
 })
+
+test('une donnée servie par la copie de secours du backend est signalée avec son âge', async ({
+  page,
+}) => {
+  await page.route('**/api/competitions/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { Age: '7200' },
+      body: JSON.stringify(COMPETITIONS.FL1),
+    }),
+  )
+  await page.goto('/')
+
+  await expect(page.getByRole('status')).toContainText('momentanément indisponible')
+  await expect(page.getByRole('status')).toContainText("datent d'il y a 2 h")
+})
