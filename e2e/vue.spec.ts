@@ -34,10 +34,18 @@ const STANDINGS = {
       stage: 'REGULAR_SEASON',
       type: 'TOTAL',
       group: null,
-      table: [standingRow(1, 524, 'Paris Saint-Germain', 9), standingRow(2, 516, 'Olympique de Marseille', 7)],
+      table: [
+        standingRow(1, 524, 'Paris Saint-Germain', 9),
+        standingRow(2, 516, 'Olympique de Marseille', 7),
+      ],
     },
     // Les tableaux HOME/AWAY ne doivent pas être affichés
-    { stage: 'REGULAR_SEASON', type: 'HOME', group: null, table: [standingRow(1, 999, 'Équipe HOME', 6)] },
+    {
+      stage: 'REGULAR_SEASON',
+      type: 'HOME',
+      group: null,
+      table: [standingRow(1, 999, 'Équipe HOME', 6)],
+    },
   ],
 }
 
@@ -75,7 +83,8 @@ const mockApi = async (page: Page): Promise<void> => {
     if (resource === 'matches') return json(route, MATCHES)
     if (resource === 'scorers') return json(route, { scorers: [] })
 
-    const competition = COMPETITIONS[id] ?? Object.values(COMPETITIONS).find((c) => String(c.id) === id)
+    const competition =
+      COMPETITIONS[id] ?? Object.values(COMPETITIONS).find((c) => String(c.id) === id)
     return competition
       ? json(route, competition)
       : problem(route, 404, 'Not Found', "L'API football-data.org a répondu par une erreur")
@@ -196,9 +205,11 @@ test('les flèches du clavier changent de saison, le focus et le classement suiv
   await expect(saison2024).toHaveAttribute('aria-checked', 'true')
   await expect(table.getByText('Champion 2024')).toBeVisible()
 
-  expect(requestsFor(requests, 'standings').map((url) => url.searchParams.get('season'))).toEqual(
-    ['2026', '2025', '2024'],
-  )
+  expect(requestsFor(requests, 'standings').map((url) => url.searchParams.get('season'))).toEqual([
+    '2026',
+    '2025',
+    '2024',
+  ])
 })
 
 test("l'onglet buteurs suit la saison choisie et le nombre de buteurs demandé", async ({
@@ -211,7 +222,10 @@ test("l'onglet buteurs suit la saison choisie et le nombre de buteurs demandé",
   await page.getByRole('radio', { name: 'Saison 2025/2026' }).click()
   await page.getByRole('button', { name: 'Buteurs' }).click()
 
-  await expect(page.getByRole('button', { name: 'Buteurs' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Buteurs' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
   const lignes = page.getByRole('table').locator('tbody tr')
   await expect(lignes).toHaveCount(10)
   await expect(lignes.first()).toContainText('Buteur 1')

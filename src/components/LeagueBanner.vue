@@ -30,12 +30,7 @@ const { leagueData } = useLeagueData(() => props.competition)
       :style="{ backgroundColor: leagueData.colors.bg, color: leagueData.colors.text }"
     >
       <span class="ecusson">
-        <img
-          v-if="leagueData.emblem"
-          :src="leagueData.emblem"
-          alt=""
-          class="ecusson-image"
-        />
+        <img v-if="leagueData.emblem" :src="leagueData.emblem" alt="" class="ecusson-image" />
         <span v-else class="ecusson-defaut" aria-hidden="true">{{ leagueData.icon }}</span>
       </span>
 
@@ -75,7 +70,9 @@ const { leagueData } = useLeagueData(() => props.competition)
   letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .retour:hover {

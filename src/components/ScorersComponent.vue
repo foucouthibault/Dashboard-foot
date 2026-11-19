@@ -76,12 +76,7 @@ watch(
           <td class="col-equipe">
             <div class="equipe">
               <span class="ecusson">
-                <img
-                  :src="scorer.team.crest || PLACEHOLDER_CREST"
-                  alt=""
-                  width="22"
-                  height="22"
-                />
+                <img :src="scorer.team.crest || PLACEHOLDER_CREST" alt="" width="22" height="22" />
               </span>
               <span class="equipe-nom">{{ scorer.team.name }}</span>
             </div>

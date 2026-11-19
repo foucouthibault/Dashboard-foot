@@ -4,7 +4,7 @@ import type { ScorersResponse } from '@/types'
 export async function getCompetitionScorers(
   competitionId: string,
   limit: number = 10,
-  season?: string
+  season?: string,
 ): Promise<ScorersResponse> {
   try {
     const response = await apiClient.get<ScorersResponse>(

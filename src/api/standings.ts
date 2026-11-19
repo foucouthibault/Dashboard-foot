@@ -3,7 +3,7 @@ import type { StandingsResponse } from '@/types'
 
 export async function getCompetitionStandings(
   competitionId: string = 'FL1',
-  season?: string
+  season?: string,
 ): Promise<StandingsResponse> {
   try {
     const response = await apiClient.get<StandingsResponse>(

@@ -17,8 +17,7 @@ vi.mock('vue-router', () => ({
 
 const mockedGet = vi.mocked(getAllChampionships)
 
-const mountSelector = () =>
-  mount(ChampionshipsSelector, { global: { plugins: [createPinia()] } })
+const mountSelector = () => mount(ChampionshipsSelector, { global: { plugins: [createPinia()] } })
 
 describe('ChampionshipsSelector', () => {
   beforeEach(() => {

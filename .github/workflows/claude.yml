@@ -66,4 +66,3 @@ jobs:
           claude_args: |
             --allowedTools "Bash(npm ci),Bash(npm test),Bash(npm test:*),Bash(npm run lint:check),Bash(npm run lint),Bash(npm run type-check),Bash(npm run test:coverage),Bash(npm run build),Bash(npm run build-only),Bash(npx vitest:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh pr checks:*)"
             --append-system-prompt "Si la demande prévoit une PR, ouvre-la toi-même avec gh pr create --base main --body-file pr-body.md (fichier écrit à la racine, jamais commité), puis donne son lien au lieu du lien Create PR."
-

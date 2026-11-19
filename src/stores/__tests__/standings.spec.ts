@@ -25,7 +25,11 @@ const row = (position: number, id: number): StandingRow => ({
   goalDifference: 0,
 })
 
-const group = (type: StandingGroup['type'], rows: StandingRow[], name: string | null = null): StandingGroup => ({
+const group = (
+  type: StandingGroup['type'],
+  rows: StandingRow[],
+  name: string | null = null,
+): StandingGroup => ({
   stage: 'REGULAR_SEASON',
   type,
   group: name,
@@ -41,7 +45,11 @@ describe('useStandingsStore', () => {
 
   it('ne garde que les tableaux TOTAL', async () => {
     mockedGet.mockResolvedValue({
-      standings: [group('TOTAL', [row(1, 1), row(2, 2)]), group('HOME', [row(1, 3)]), group('AWAY', [row(1, 4)])],
+      standings: [
+        group('TOTAL', [row(1, 1), row(2, 2)]),
+        group('HOME', [row(1, 3)]),
+        group('AWAY', [row(1, 4)]),
+      ],
     })
     const store = useStandingsStore()
 

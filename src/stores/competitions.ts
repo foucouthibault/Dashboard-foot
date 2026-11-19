@@ -43,4 +43,3 @@ export const useCompetitionsStore = defineStore('competitions', () => {
 
   return { competitions, loading, error, fetchCompetitions }
 })
-

@@ -34,7 +34,7 @@ export default defineConfigWithVueTs(
     },
     rules: { '@typescript-eslint/no-floating-promises': 'error' },
   },
-  
+
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
@@ -44,7 +44,7 @@ export default defineConfigWithVueTs(
       'vitest/expect-expect': ['error', { assertFunctionNames: ['expect', 'expectTypeOf'] }],
     },
   },
-  
+
   {
     ...pluginPlaywright.configs['flat/recommended'],
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
