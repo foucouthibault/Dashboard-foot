@@ -1,0 +1,6 @@
+# Commits de mise en forme seule, ignorés par git blame :
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (GitHub les ignore d'office dans sa vue « Blame »).
+
+# Remet au format Prettier tout le dépôt (#156)
+08ecfcf3193fbd79d12002c1734c0b9a45ebccb5
