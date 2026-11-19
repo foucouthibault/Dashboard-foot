@@ -35,6 +35,8 @@ jobs:
         git diff --quiet -- openapi.json src/types/api.generated.ts \
           || echo "::warning title=Contrat backend::openapi.json a changé côté backend : lancer npm run api:sync et committer le résultat"
     - run: npm run lint:check
+    # Mise en forme (.prettierrc.json) : ESLint ne la vérifie pas (@vue/eslint-config-prettier)
+    - run: npm run format:check
     - run: npm run test:coverage
     - run: npm run build
     # Ignoré quand le secret n'est pas disponible (PR depuis un fork, PR Dependabot)

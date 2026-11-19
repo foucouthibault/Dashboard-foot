@@ -1,0 +1,7 @@
+# Prettier 3 ignore déjà les fichiers du .gitignore (dist/, coverage/, test-results/…).
+
+# Copie du contrat du backend, téléchargée telle quelle par npm run api:sync (et en CI)
+openapi.json
+
+# Généré et tenu à jour par npm
+package-lock.json
