@@ -11,6 +11,8 @@ dernière journée et buteurs. Toutes les données passent par le backend Spring
 npm ci
 npm run dev             # http://localhost:5173, /api relayé vers http://localhost:8080
 npm run lint:check      # ESLint sans correction (ce que lance la CI)
+npm run format          # Prettier sur tout le dépôt (hors .prettierignore et .gitignore)
+npm run format:check    # Prettier sans correction (ce que lance la CI)
 npm run type-check      # vue-tsc
 npm test                # tests unitaires Vitest
 npm run test:coverage   # idem + coverage/lcov.info (lu par Sonar)
@@ -19,8 +21,8 @@ npm run api:sync        # télécharge openapi.json du backend (main) et régén
 npx playwright test --project=chromium   # tests E2E (lance lui-même le serveur)
 ```
 
-Avant une PR, lancer au minimum : `lint:check`, `test`, `build`, et les tests E2E si un
-écran ou un parcours change.
+Avant une PR, lancer au minimum : `lint:check`, `format:check`, `test`, `build`, et les tests
+E2E si un écran ou un parcours change.
 
 ## Architecture
 
