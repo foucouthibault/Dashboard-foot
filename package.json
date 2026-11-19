@@ -56,6 +56,9 @@
   },
   "overrides": {
     "minimatch": "^11.0.1",
+    "js-beautify": {
+      "glob": "^14.0.2"
+    },
     "openapi-typescript": {
       "typescript": "$typescript"
     }
