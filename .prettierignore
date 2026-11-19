@@ -5,3 +5,6 @@ openapi.json
 
 # Généré et tenu à jour par npm
 package-lock.json
+
+# Modèles d'issue : les puces vides gardent un espace final pour qu'on écrive directement après
+.github/ISSUE_TEMPLATE/
