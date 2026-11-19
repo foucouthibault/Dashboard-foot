@@ -55,7 +55,7 @@
     "vue-tsc": "^3.3.14"
   },
   "overrides": {
-    "minimatch": "^10.2.1",
+    "minimatch": "^11.0.1",
     "js-beautify": {
       "glob": "^14.0.2"
     },
