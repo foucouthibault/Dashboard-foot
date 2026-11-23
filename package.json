@@ -42,7 +42,7 @@
     "@vue/tsconfig": "^0.9.1",
     "eslint": "^10.13.0",
     "eslint-plugin-playwright": "^2.12.2",
-    "eslint-plugin-vue": "^10.12.0",
+    "eslint-plugin-vue": "^10.12.1",
     "jiti": "^2.6.1",
     "jsdom": "^31.0.1",
     "npm-run-all2": "^9.0.4",
