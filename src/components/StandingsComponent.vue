@@ -69,8 +69,8 @@ const rowsKey = computed(() => props.rows.map((row) => row.team.id).join('-'))
           <td class="col-joues chiffre">{{ row.playedGames }}</td>
 
           <td class="col-bilan chiffre">
-            <span class="bilan-v">{{ row.won }}</span
-            ><span class="bilan-sep">·</span><span class="bilan-n">{{ row.draw }}</span
+            <span class="bilan-v">{{ row.won }}</span><span class="bilan-sep">·</span
+            ><span class="bilan-n">{{ row.draw }}</span
             ><span class="bilan-sep">·</span><span class="bilan-d">{{ row.lost }}</span>
           </td>
 
